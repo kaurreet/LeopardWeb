@@ -24,7 +24,7 @@ public:
 	void search_roster(string in_course_search_roster);
 	void print_roster(string in_course_print_roster);
 	void search_courses(string in_course);
-	void print_courses(string in_course);
+	string print_courses(string in_course);
 	//destructor
 	~Admin();
 
