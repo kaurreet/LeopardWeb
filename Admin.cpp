@@ -92,8 +92,9 @@ void Admin::print_roster(string in_course_print_roster) {
 void Admin::search_courses(string in_course) {
 	cout << "Course Searched!" << endl;
 }
-void Admin::print_courses(string in_course) {
-	cout << "Course Printed!" << endl;
+string Admin::print_courses(string in_course) {
+	string query = "SELECT * FROM COURSE WHERE TITLE LIKE '%" + in_course + "%';";
+	return query;
 }
 //destructor
 Admin::~Admin() {
