@@ -1,0 +1,6 @@
+﻿  Assignment_1.cpp
+C:\Users\Andy Le\OneDrive - Wentworth Institute of Technology\Documents\College Semesters_Years\Summer_2025_Semester\Applied Programming Concepts\Assignments\Assignment_3\Assignment_3_cpp\Assignment_1.cpp(612,18): warning C4553: '==': result of expression not used; did you intend '='?
+C:\Users\Andy Le\OneDrive - Wentworth Institute of Technology\Documents\College Semesters_Years\Summer_2025_Semester\Applied Programming Concepts\Assignments\Assignment_3\Assignment_3_cpp\Assignment_1.cpp(51,16): warning C4101: 'stmt': unreferenced local variable
+  User.cpp
+  Generating Code...
+  Assignment_1.vcxproj -> C:\Users\Andy Le\OneDrive - Wentworth Institute of Technology\Documents\College Semesters_Years\Summer_2025_Semester\Applied Programming Concepts\Assignments\Assignment_3\Assignment_3_cpp\x64\Debug\Assignment_1.exe
