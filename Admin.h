@@ -1,5 +1,8 @@
 #pragma once
 #include "Instructor.h"
+extern "C" {
+#include "sqlite3.h"
+}
 class Admin :
     public User
 {
@@ -21,9 +24,9 @@ public:
 	string remove_user(string in_user_removef, string in_user_removel, string in_user_remove_ID, string in_user_remove_Grad_year, string in_user_remove_Major, string in_user_remove_Email, int remove_user_type, string user_remove_Title, string user_remove_YOH, string user_remove_Department, string user_remove_Office);
 	void add_student_course(string in_student, string in_course);
 	void remove_student_course(string in_student, string in_course);
-	void search_roster(string in_course_search_roster);
-	void print_roster(string in_course_print_roster);
-	void search_courses(string in_course);
+	void search_roster(sqlite3* db, string user_searchf, string user_searchl, string user_search_ID, string user_search_Grad_year, string user_search_Major, string user_search_Email, string search_user_type, string user_search_Title, string user_search_YOH, string user_search_Department, string user_search_Office);
+	void print_roster(string &student_query, string &instructor_query, string &admin_query);
+	void search_courses(sqlite3* db, string course_add_drop, int Course_CRN, string department_course, string course_instructor, string course_start_time, string Meeting_times, string course_semester, int course_year, int course_credits);
 	string print_courses(string in_course);
 	//destructor
 	~Admin();
