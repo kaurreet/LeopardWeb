@@ -130,12 +130,14 @@
     <ClCompile Include="Admin.cpp" />
     <ClCompile Include="Assignment_1.cpp" />
     <ClCompile Include="Instructor.cpp" />
+    <ClCompile Include="sqlite3.c" />
     <ClCompile Include="Student.cpp" />
     <ClCompile Include="User.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Admin.h" />
     <ClInclude Include="Instructor.h" />
+    <ClInclude Include="sqlite3.h" />
     <ClInclude Include="Student.h" />
     <ClInclude Include="User.h" />
   </ItemGroup>
