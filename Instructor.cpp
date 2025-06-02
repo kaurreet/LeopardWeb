@@ -5,6 +5,9 @@ using std::cin;
 using std::cout;
 using std::endl;
 using std::string;
+extern "C" {
+#include "sqlite3.h"
+}
 //constructor
 Instructor::Instructor() {
 	first_name = "Andy";
@@ -38,17 +41,44 @@ void Instructor::show_all() {
 	//return first_name, last_name, ID;
 
 }
-void Instructor::search_course(string in_course) {
-	cout << "Course Searched!" << endl;
+void Instructor::search_course(sqlite3* db, string course_add_drop, int Course_CRN, string department_course, string course_instructor, string course_start_time, string Meeting_times, string course_semester, int course_year, int course_credits) {
+	sqlite3_stmt* stmt;
+	//int rc = sqlite3_open("assignment3.db", &db);
+	const char* sql = R"(
+        SELECT * FROM COURSE
+        WHERE CRN = ? AND TITLE = ? AND DEPARTMENT = ? AND INSTRUCTOR = ? AND TIME = ? AND
+              DofW = ? AND SEMESTER = ? AND YEAR = ? AND CREDITS = ?)";
 
+	int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+	if (rc != SQLITE_OK) {
+		std::cerr << "Failed to prepare statement. Error: " << sqlite3_errmsg(db) << std::endl;
+		return;
+	}
+
+	sqlite3_bind_int(stmt, 1, Course_CRN);
+	sqlite3_bind_text(stmt, 2, course_add_drop.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 3, department_course.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 4, course_instructor.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 5, course_start_time.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 6, Meeting_times.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 7, course_semester.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_int(stmt, 8, course_year);
+	sqlite3_bind_int(stmt, 9, course_credits);
+
+	rc = sqlite3_step(stmt);
+	if (rc == SQLITE_ROW) {
+		cout << "Course found in the database!" << endl;
+	}
+	else {
+		cout << "Course NOT found in the database!" << endl;
+	}
+	sqlite3_finalize(stmt);
 }
-void Instructor::print_class_list(string in_course) {
-	cout << "Class List Printed!" << endl;
-
+void Instructor::print_class_list(string &student_query) {
+	student_query = "SELECT * FROM STUDENT;";
 }
-void Instructor::print_schedule() {
-	cout << "Schedule Printed!" << endl;
-
+string Instructor::print_schedule() {
+	return "SELECT * FROM COURSE;";
 }
 //destructor
 Instructor::~Instructor() {
