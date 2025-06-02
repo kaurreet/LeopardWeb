@@ -2,6 +2,9 @@
 #include <iostream>
 #include <algorithm>
 #include "sqlite3.h"
+extern "C" {
+#include "sqlite3.h"
+}
 using std::cin;
 using std::cout;
 using std::endl;
@@ -83,14 +86,103 @@ void Admin::remove_student_course(string in_student, string in_course) {
 	//cout << "Student Removed from Course!";
 	cout << in_student << " Removed from " << in_course << "!" << endl;
 }
-void Admin::search_roster(string in_course_search_roster) {
-	cout << "Roster Searched!" << endl;
+void Admin::search_roster(sqlite3* db, string user_searchf, string user_searchl, string user_search_ID, string user_search_Grad_year, string user_search_Major, string user_search_Email, string search_user_type, string user_search_Title, string user_search_YOH, string user_search_Department, string user_search_Office) {
+	sqlite3_stmt* stmt;
+	const char* sql ="";
+	//int rc = sqlite3_open("assignment3.db", &db);
+	if (search_user_type == "STUDENT") {
+		sql = R"(
+        SELECT * FROM STUDENT
+        WHERE ID = ? AND NAME = ? AND SURNAME = ? AND GRADYEAR = ? AND MAJOR = ? AND
+              EMAIL = ?)";
+	} else if (search_user_type == "INSTRUCTOR") {
+		sql = R"(
+        SELECT * FROM INSTRUCTOR
+        WHERE ID = ? AND NAME = ? AND SURNAME = ? AND TITLE = ? AND HIREYEAR = ? AND DEPT = ? AND
+              EMAIL = ?)";
+	} else if (search_user_type == "ADMIN") {
+		sql = R"(
+        SELECT * FROM ADMIN
+        WHERE ID = ? AND NAME = ? AND SURNAME = ? AND TITLE = ? AND OFFICE = ? AND
+              EMAIL = ?)";
+	}
+
+
+	int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+	if (rc != SQLITE_OK) {
+		std::cerr << "Failed to prepare statement. Error: " << sqlite3_errmsg(db) << std::endl;
+		return;
+	}
+
+	if (search_user_type == "STUDENT") {
+		sqlite3_bind_int(stmt, 1, std::stoi(user_search_ID));
+		sqlite3_bind_text(stmt, 2, user_searchf.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 3, user_searchl.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 4, user_search_Grad_year.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 5, user_search_Major.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 6, user_search_Email.c_str(), -1, SQLITE_TRANSIENT);
+	}
+	else if (search_user_type == "INSTRUCTOR") {
+		sqlite3_bind_int(stmt, 1, std::stoi(user_search_ID));
+		sqlite3_bind_text(stmt, 2, user_searchf.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 3, user_searchl.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 4, user_search_Title.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 5, user_search_YOH.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 6, user_search_Department.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 7, user_search_Email.c_str(), -1, SQLITE_TRANSIENT);
+	}
+	else if (search_user_type == "ADMIN") {
+		sqlite3_bind_int(stmt, 1, std::stoi(user_search_ID));
+		sqlite3_bind_text(stmt, 2, user_searchf.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 3, user_searchl.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 4, user_search_Title.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 5, user_search_Office.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 6, user_search_Email.c_str(), -1, SQLITE_TRANSIENT);
+	}
+	rc = sqlite3_step(stmt);
+	if (rc == SQLITE_ROW) {
+		cout << "User found in the database!" << endl;
+	}
+	else {
+		cout << "User NOT found in the database!" << endl;
+	}
+	sqlite3_finalize(stmt);
 }
-void Admin::print_roster(string in_course_print_roster) {
-	cout << "Roster Printed!" << endl;
+void Admin::print_roster(string &student_query, string &instructor_query, string &admin_query) {
+	student_query = "SELECT * FROM STUDENT;"; instructor_query = "SELECT * FROM INSTRUCTOR;"; admin_query = "SELECT * FROM ADMIN;";
 }
-void Admin::search_courses(string in_course) {
-	cout << "Course Searched!" << endl;
+void Admin::search_courses(sqlite3* db, string course_add_drop, int Course_CRN, string department_course, string course_instructor, string course_start_time, string Meeting_times, string course_semester, int course_year, int course_credits) {
+	sqlite3_stmt* stmt;
+	//int rc = sqlite3_open("assignment3.db", &db);
+	const char* sql = R"(
+        SELECT * FROM COURSE
+        WHERE CRN = ? AND TITLE = ? AND DEPARTMENT = ? AND INSTRUCTOR = ? AND TIME = ? AND
+              DofW = ? AND SEMESTER = ? AND YEAR = ? AND CREDITS = ?)";
+
+	int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+	if (rc != SQLITE_OK) {
+		std::cerr << "Failed to prepare statement. Error: " << sqlite3_errmsg(db) << std::endl;
+		return;
+	}
+
+	sqlite3_bind_int(stmt, 1, Course_CRN);
+	sqlite3_bind_text(stmt, 2, course_add_drop.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 3, department_course.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 4, course_instructor.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 5, course_start_time.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 6, Meeting_times.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 7, course_semester.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_int(stmt, 8, course_year);
+	sqlite3_bind_int(stmt, 9, course_credits);
+
+	rc = sqlite3_step(stmt);
+	if (rc == SQLITE_ROW) {
+		cout << "Course found in the database!" << endl;
+	}
+	else {
+		cout << "Course NOT found in the database!" << endl;
+	}
+	sqlite3_finalize(stmt);
 }
 string Admin::print_courses(string in_course) {
 	string query = "SELECT * FROM COURSE WHERE TITLE LIKE '%" + in_course + "%';";
