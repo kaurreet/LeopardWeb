@@ -25,12 +25,105 @@ static int callback(void* data, int argc, char** argv, char** azColName)
 	printf("\n");
 	return 0;
 }
+
+void create_table(sqlite3* db, const string& sql) {
+	char* messageError;
+	int exit = sqlite3_exec(db, sql.c_str(), NULL, 0, &messageError);
+	if (exit != SQLITE_OK)
+	{
+		std::cerr << "Error Create Table: " << messageError << endl;
+		sqlite3_free(messageError);
+	}
+	else {
+		cout << "Table created Successfully" << endl;
+	}
+}
+
+void create_tables(sqlite3* db) {
+	// Create Course Table
+	string tableCourse = "CREATE TABLE IF NOT EXISTS COURSE(" //database Course table
+		"CRN INTEGER PRIMARY KEY NOT NULL, "
+		"TITLE TEXT NOT NULL, "
+		"DEPARTMENT TEXT NOT NULL, "
+		"INSTRUCTOR TEXT NOT NULL, "
+		"TIME TEXT NOT NULL,"
+		"DoftW TEXT NOT NULL,"
+		"SEMESTER TEXT NOT NULL,"
+		"YEAR INTEGER NOT NULL,"
+		"CREDITS INTEGER NOT NULL); ";
+
+	// Create Enrollment Table
+	string studentEnrolledTable = "CREATE TABLE IF NOT EXISTS REGISTERED("
+		"CRN INT NOT NULL, "
+		"TITLE TEXT NOT NULL, "
+		"DEPARTMENT TEXT NOT NULL, "
+		"TIME TEXT NOT NULL, "
+		"DoftW TEXT NOT NULL, "
+		"SEMESTER TEXT NOT NULL, "
+		"YEAR INT NOT NULL, "
+		"CREDITS INT NOT NULL, "
+		"StudentID TEXT NOT NULL, "
+		"PRIMARY KEY (CRN, StudentID));";
+
+	// Create Student Table
+	string tableStudent = "CREATE TABLE IF NOT EXISTS STUDENT("  //database Student table
+		"ID INTEGER PRIMARY KEY, "
+		"NAME TEXT NOT NULL, "
+		"SURNAME TEXT NOT NULL, "
+		"GRADYEAR INTEGER NOT NULL,"
+		"MAJOR TEXT NOT NULL,"
+		"EMAIL TEXT NOT NULL); ";
+
+	string RosterTable = "CREATE TABLE IF NOT EXISTS ROSTER("
+		"STUDENT_CRN TEXT NOT NULL, "
+		"STUDENT_SECTION TEXT NOT NULL, "
+		"STUDENT_FIRSTNAME TEXT, "
+		"STUDENT_LASTNAME TEXT, "
+		"STUDENT_ID TEXT, "
+		"STUDENT_MAJOR TEXT, "
+		"STUDENT_GRADUATION TEXT);";
+
+	// Create Instructor Table
+	string tableInstructor = "CREATE TABLE IF NOT EXISTS INSTRUCTOR(" //database Instructor table
+		"ID INTEGER PRIMARY KEY, "
+		"NAME TEXT NOT NULL, "
+		"SURNAME TEXT NOT NULL, "
+		"TITLE TEXT NOT NULL,"
+		"HIREYEAR INTEGER NOT NULL,"
+		"DEPT TEXT NOT NULL,"
+		"EMAIL TEXT NOT NULL); ";
+
+	// Create Admin Table
+	string tableADMIN = "CREATE TABLE IF NOT EXISTS ADMIN(" //database Admin table
+		"ID INTEGER PRIMARY KEY, "
+		"NAME TEXT NOT NULL, "
+		"SURNAME TEXT NOT NULL, "
+		"TITLE TEXT NOT NULL,"
+		"OFFICE TEXT NOT NULL,"
+		"EMAIL TEXT NOT NULL); ";
+
+	string Logins = "CREATE TABLE IF NOT EXISTS LOGINS("
+		"ID TEXT PRIMARY KEY NOT NULL, "
+		"Name TEXT NOT NULL, "
+		"Surname TEXT NOT NULL, "
+		"Username TEXT NOT NULL, "
+		"Password TEXT NOT NULL);";
+
+	create_table(db, tableCourse);
+	create_table(db, studentEnrolledTable);
+	create_table(db, tableStudent);
+	create_table(db, tableInstructor);
+	create_table(db, tableADMIN);
+	create_table(db, Logins);
+	create_table(db, RosterTable);
+}
+
 int main()
 {
 	string userType;
 	string user_first_name;
 	string user_last_name;
-	string user_ID;
+	int user_ID;
 	string course_add_drop;
 	string course_searched;
 	string course_printed;
@@ -66,6 +159,9 @@ int main()
 	string course_semester;
 	int course_year;
 	int course_credits;
+	string user_update_Grad_year;
+	string user_update_major;
+	string user_update_Title;
 
 
 	string user_add_removef;
@@ -92,122 +188,8 @@ int main()
 	string user_remove_Department;
 	string user_remove_Office;
 	int remove_user_type;
-
-	string tableADMIN = "CREATE TABLE IF NOT EXISTS ADMIN(" //database Admin table
-		"ID INTEGER PRIMARY KEY, "
-		"NAME TEXT NOT NULL, "
-		"SURNAME TEXT NOT NULL, "
-		"TITLE TEXT NOT NULL,"
-		"OFFICE TEXT NOT NULL,"
-		"EMAIL TEXT NOT NULL); ";
-
 	exit = sqlite3_open("assignment3.db", &db);			//open the database
-
-	char* messageError;
-
-	exit = sqlite3_exec(db, tableADMIN.c_str(), nullptr, nullptr, &messageError);
-
-	if (exit != SQLITE_OK)
-	{
-		std::cerr << "Error Create Table" << std::endl;
-		sqlite3_free(messageError);
-	}
-	else
-		cout << "Table created Successfully" << std::endl;
-
-	string tableInstructor = "CREATE TABLE IF NOT EXISTS INSTRUCTOR(" //database Instructor table
-		"ID INTEGER PRIMARY KEY, "
-		"NAME TEXT NOT NULL, "
-		"SURNAME TEXT NOT NULL, "
-		"TITLE TEXT NOT NULL,"
-		"HIREYEAR INTEGER NOT NULL,"
-		"DEPT TEXT NOT NULL,"
-		"EMAIL TEXT NOT NULL); ";
-
-	exit = sqlite3_exec(db, tableInstructor.c_str(), nullptr, nullptr, &messageError);
-
-	if (exit != SQLITE_OK)
-	{
-		std::cerr << "Error Create Table" << std::endl;
-		sqlite3_free(messageError);
-	}
-	else
-		cout << "Table created Successfully" << std::endl;
-
-	string tableStudent = "CREATE TABLE IF NOT EXISTS STUDENT("  //database Student table
-		"ID INTEGER PRIMARY KEY, "
-		"NAME TEXT NOT NULL, "
-		"SURNAME TEXT NOT NULL, "
-		"GRADYEAR INTEGER NOT NULL,"
-		"MAJOR TEXT NOT NULL,"
-		"EMAIL TEXT NOT NULL); ";
-
-	exit = sqlite3_exec(db, tableStudent.c_str(), nullptr, nullptr, &messageError);
-
-	if (exit != SQLITE_OK)
-	{
-		std::cerr << "Error Create Table" << std::endl;
-		sqlite3_free(messageError);
-	}
-	else
-		cout << "Table created Successfully" << std::endl;
-
-	string tableCourse = "CREATE TABLE IF NOT EXISTS COURSE(" //database Course table
-		"CRN INTEGER PRIMARY KEY, "
-		"TITLE TEXT NOT NULL, "
-		"DEPARTMENT TEXT NOT NULL, "
-		"INSTRUCTOR TEXT NOT NULL, "
-		"TIME TEXT NOT NULL,"
-		"DofW TEXT NOT NULL,"
-		"SEMESTER TEXT NOT NULL,"
-		"YEAR INTEGER NOT NULL,"
-		"CREDITS INTEGER NOT NULL); ";
-
-	exit = sqlite3_exec(db, tableCourse.c_str(), NULL, 0, &messageError);
-
-	if (exit != SQLITE_OK)
-	{
-		std::cerr << "Error Create Table" << std::endl;
-		sqlite3_free(messageError);
-	}
-	else
-		cout << "Table created Successfully" << std::endl;
-
-	//Admin, Instructor, Student addition (as backup)
-	//Create Course List (yes I stopped caring at this point)
-
-	/*
-	string sql("INSERT INTO ADMIN VALUES(30001, 'Margaret', 'Hamilton', 'President', 'Dobbs 1600', 'hamiltonm');"
-		"INSERT INTO ADMIN VALUES(30002, 'Vera', 'Rubin', 'Registar', 'Wentworth 101', 'rubinv');"
-
-		"INSERT INTO INSTRUCTOR VALUES(20001, 'Joseph', 'Fourier', 'Full Prof.', 1820, 'BSEE', 'fourierj');"
-		"INSERT INTO INSTRUCTOR VALUES(20002, 'Nelson', 'Patrick', 'Full Prof.', 1994, 'HUSS', 'patrickn');"
-		"INSERT INTO INSTRUCTOR VALUES(20003, 'Galileo', 'Galilei', 'Full Prof.', 1600, 'BSAS', 'galileig');"
-		"INSERT INTO INSTRUCTOR VALUES(20004, 'Alan', 'Turing', 'Associate Prof.', 1940, 'BSCO', 'turinga');"
-		"INSERT INTO INSTRUCTOR VALUES(20005, 'Katie', 'Bouman', 'Associate Prof.', 2019, 'BCOS', 'boumank');"
-		"INSERT INTO INSTRUCTOR VALUES(20006, 'Daniel', 'Bernouli', 'Associate Prof.', 1760, 'BSME', 'bernoulid');"
-
-		"INSERT INTO STUDENT VALUES(10001, 'Isaac', 'Newton', 1668, 'BSAS', 'newtoni');"
-		"INSERT INTO STUDENT VALUES(10002, 'Marie', 'Curie', 1903, 'BSAS', 'curiem');"
-		"INSERT INTO STUDENT VALUES(10003, 'Nikola', 'Tesla', 1878, 'BSEE', 'teslan');"
-		"INSERT INTO STUDENT VALUES(10004, 'Thomas', 'Edison', 1879, 'BSEE', 'edisont');"
-		"INSERT INTO STUDENT VALUES(10005, 'John', 'von Neumann', 1923, 'BSCO', 'vonneumanj');"
-		"INSERT INTO STUDENT VALUES(10006, 'Grace', 'Hopper', 1928, 'BCOS', 'hopperg');"
-		"INSERT INTO STUDENT VALUES(10007, 'Mae', 'Jemison', 1981, 'BSCH', 'jamisonm');"
-		"INSERT INTO STUDENT VALUES(10008, 'Mark', 'Dean', 1979, 'BSCO', 'deanm');"
-		"INSERT INTO STUDENT VALUES(10009, 'Michael', 'Faraday', 1812, 'BSAS', 'faradaym');"
-		"INSERT INTO STUDENT VALUES(10010, 'Ada', 'Lovelace', 1832, 'BCOS', 'lovelacea');"
-
-		//main issue is that this is not being used
-		"INSERT INTO COURSE VALUES(50001, 'Engrish', 'BSEE', '8:00 AM', 'M W F', 'Fall', 2022, 4);"
-		"INSERT INTO COURSE VALUES(50002, 'Matting', 'HUSS', '10:00 AM', 'M W F', 'Winter', 2022, 4);"
-		"INSERT INTO COURSE VALUES(50003, 'Blow Ups', 'BSAS', '10:00 AM', 'M W F', 'Fall', 2022, 4);"
-		"INSERT INTO COURSE VALUES(50004, 'Torture Rooms', 'BSCO', '8:00 AM', 'M W F', 'Winter', 2022, 3);"
-		"INSERT INTO COURSE VALUES(50005, 'Femboyant Architypes', 'BCOS', '8:00 AM', 'M W F', 'Fall', 2022, 3);"
-		"INSERT INTO COURSE VALUES(50006, 'Eric Femboy Crisis Hotline', 'BSME', '7:00 PM', 'M W F', 'Winter', 2022, 2);"
-	);
-	*/
-
+	create_tables(db);
 	string sql(
 		//main issue is that this is not being used
 		"INSERT INTO COURSE VALUES(50001, 'English', 'BSEE', 'William Gibson', '8:00 AM', 'M W F', 'Fall', 2022, 4);"
@@ -218,15 +200,16 @@ int main()
 		"INSERT INTO COURSE VALUES(50006, 'Chemistry', 'BSME', 'Alfred Nobel', '7:00 PM', 'M W F', 'Winter', 2022, 2);"
 	);
 
-	exit = sqlite3_exec(db, sql.c_str(), NULL, 0, &messageError);
+	create_table(db, sql.c_str());
+	//exit = sqlite3_exec(db, sql.c_str(), NULL, 0, &messageError);
 
-	if (exit != SQLITE_OK)
-	{
-		std::cerr << "Error Data Fail" << std::endl;
-		sqlite3_free(messageError);
-	}
-	else
-		cout << "Data Successfully Inserted" << std::endl;
+	//if (exit != SQLITE_OK)
+	//{
+	//	std::cerr << "Error Data Fail" << std::endl;
+	//	sqlite3_free(messageError);
+	//}
+	//else
+	//	cout << "Data Successfully Inserted" << std::endl;
 
 	/***********************************************
 	 print all data in the table with SELECT * FROM
@@ -299,30 +282,30 @@ int main()
 					{
 						cout << "What is the name of the Course that you want to add?: ";
 						cin >> course_add_drop;
-						//std::transform(course_add_drop.begin(), course_add_drop.end(), course_add_drop.begin(), ::toupper);
-						cout << "What is the CRN of the Course that you want to add?: ";
-						cin >> Course_CRN;
-						cout << "What Department does the course belong to?: ";
-						cin >> department_course;
-						std::cin.ignore();
-						cout << "Who is the Instructor of the course?: ";
-						std::getline(cin, course_instructor);
-						//cin >> course_instructor;
-						cout << "What Time does the class start(Enter: XX:XX AM/PM)?: ";
-						std::getline(cin, course_start_time);
-						//cin >> course_start_time;
-						cout << "On which days is the classes attended?: \n 1 - M W F \n 2 - T TH \n 3 - M W \n";
-						cin >> days_int;
-						if (days_int == 1) { Meeting_times = "M W F"; }
-						else if (days_int == 2) { Meeting_times = "T TH"; }
-						else if (days_int == 3) { Meeting_times = "M W"; }
-						cout << "Which Semester is the course taught?: ";
-						cin >> course_semester;
-						cout << "Which year is the course taught?: ";
-						cin >> course_year;
-						cout << "How many credits is the course worth?: ";
-						cin >> course_credits;
-						return_v = studentUser.add_course(course_add_drop, Course_CRN, department_course, course_instructor, course_start_time, Meeting_times, course_semester, course_year, course_credits);
+						////std::transform(course_add_drop.begin(), course_add_drop.end(), course_add_drop.begin(), ::toupper);
+						//cout << "What is the CRN of the Course that you want to add?: ";
+						//cin >> Course_CRN;
+						//cout << "What Department does the course belong to?: ";
+						//cin >> department_course;
+						//std::cin.ignore();
+						//cout << "Who is the Instructor of the course?: ";
+						//std::getline(cin, course_instructor);
+						////cin >> course_instructor;
+						//cout << "What Time does the class start(Enter: XX:XX AM/PM)?: ";
+						//std::getline(cin, course_start_time);
+						////cin >> course_start_time;
+						//cout << "On which days is the classes attended?: \n 1 - M W F \n 2 - T TH \n 3 - M W \n";
+						//cin >> days_int;
+						//if (days_int == 1) { Meeting_times = "M W F"; }
+						//else if (days_int == 2) { Meeting_times = "T TH"; }
+						//else if (days_int == 3) { Meeting_times = "M W"; }
+						//cout << "Which Semester is the course taught?: ";
+						//cin >> course_semester;
+						//cout << "Which year is the course taught?: ";
+						//cin >> course_year;
+						//cout << "How many credits is the course worth?: ";
+						//cin >> course_credits;
+						return_v = studentUser.add_course(db, course_add_drop, studentUser.get_ID(user_ID));
 						int rc = sqlite3_exec(db, return_v.c_str(), nullptr, nullptr, &errMsg);
 						if (rc != SQLITE_OK) {
 							std::cerr << "SQL error while adding course: " << errMsg << std::endl;
@@ -336,30 +319,30 @@ int main()
 					{
 						cout << "What is the name of the Course that you want to remove?: ";
 						cin >> course_add_drop;
-						//std::transform(course_add_drop.begin(), course_add_drop.end(), course_add_drop.begin(), ::toupper);
-						cout << "What is the CRN of the Course that you want to remove?: ";
-						cin >> Course_CRN;
-						cout << "What Department does the course belong to?: ";
-						cin >> department_course;
-						std::cin.ignore();
-						cout << "Who is the Instructor of the course?: ";
-						std::getline(cin, course_instructor);
-						//cin >> course_instructor;
-						cout << "What Time does the class start(Enter: XX:XX AM/PM)?: ";
-						std::getline(cin, course_start_time);
-						//cin >> course_start_time;
-						cout << "On which days is the classes attended?: \n 1 - M W F \n 2 - T TH \n 3 - M W \n";
-						cin >> days_int;
-						if (days_int == 1) { Meeting_times = "M W F"; }
-						else if (days_int == 2) { Meeting_times = "T TH"; }
-						else if (days_int == 3) { Meeting_times = "M W"; }
-						cout << "Which Semester is the course taught?: ";
-						cin >> course_semester;
-						cout << "Which year is the course taught?: ";
-						cin >> course_year;
-						cout << "How many credits is the course worth?: ";
-						cin >> course_credits;
-						return_v = studentUser.remove_course(course_add_drop, Course_CRN, department_course, course_instructor, course_start_time, Meeting_times, course_semester, course_year, course_credits);
+						////std::transform(course_add_drop.begin(), course_add_drop.end(), course_add_drop.begin(), ::toupper);
+						//cout << "What is the CRN of the Course that you want to remove?: ";
+						//cin >> Course_CRN;
+						//cout << "What Department does the course belong to?: ";
+						//cin >> department_course;
+						//std::cin.ignore();
+						//cout << "Who is the Instructor of the course?: ";
+						//std::getline(cin, course_instructor);
+						////cin >> course_instructor;
+						//cout << "What Time does the class start(Enter: XX:XX AM/PM)?: ";
+						//std::getline(cin, course_start_time);
+						////cin >> course_start_time;
+						//cout << "On which days is the classes attended?: \n 1 - M W F \n 2 - T TH \n 3 - M W \n";
+						//cin >> days_int;
+						//if (days_int == 1) { Meeting_times = "M W F"; }
+						//else if (days_int == 2) { Meeting_times = "T TH"; }
+						//else if (days_int == 3) { Meeting_times = "M W"; }
+						//cout << "Which Semester is the course taught?: ";
+						//cin >> course_semester;
+						//cout << "Which year is the course taught?: ";
+						//cin >> course_year;
+						//cout << "How many credits is the course worth?: ";
+						//cin >> course_credits;
+						return_v = studentUser.remove_course(db, course_add_drop, studentUser.ID);
 						int rc = sqlite3_exec(db, return_v.c_str(), nullptr, nullptr, &errMsg);
 						if (rc != SQLITE_OK) {
 							std::cerr << "SQL error while deleting course: " << errMsg << std::endl;
@@ -391,7 +374,7 @@ int main()
 					cin >> user_input;
 					if (user_input == 1)
 					{
-						query = instructorUser.print_schedule();
+						query = instructorUser.print_schedule(instructorUser.first_name, instructorUser.last_name);
 						cout << endl << query << endl;		//print the string to screen
 
 						// you need the callback function this time since there could be multiple rows in the table
@@ -413,30 +396,44 @@ int main()
 					{
 						cout << "What is the name of the Course that you want to Search?: ";
 						cin >> course_add_drop;
-						//std::transform(course_add_drop.begin(), course_add_drop.end(), course_add_drop.begin(), ::toupper);
-						cout << "What is the CRN of the Course that you want to Search?: ";
-						cin >> Course_CRN;
-						cout << "What Department does the course belong to?: ";
-						cin >> department_course;
-						std::cin.ignore();
-						cout << "Who is the Instructor of the course searched?: ";
-						std::getline(cin, course_instructor);
-						//cin >> course_instructor;
-						cout << "What Time does the class start (Enter: XX:XX AM/PM)?: ";
-						std::getline(cin, course_start_time);
-						//cin >> course_start_time;
-						cout << "On which days is the classes attended?: \n 1 - M W F \n 2 - T TH \n 3 - M W \n";
-						cin >> days_int;
-						if (days_int == 1) { Meeting_times = "M W F"; }
-						else if (days_int == 2) { Meeting_times = "T TH"; }
-						else if (days_int == 3) { Meeting_times = "M W"; }
-						cout << "Which Semester is the course taught?: ";
-						cin >> course_semester;
-						cout << "Which year is the course taught?: ";
-						cin >> course_year;
-						cout << "How many credits is the course worth?: ";
-						cin >> course_credits;
-						instructorUser.search_course(db, course_add_drop, Course_CRN, department_course, course_instructor, course_start_time, Meeting_times, course_semester, course_year, course_credits);
+						////std::transform(course_add_drop.begin(), course_add_drop.end(), course_add_drop.begin(), ::toupper);
+						//cout << "What is the CRN of the Course that you want to Search?: ";
+						//cin >> Course_CRN;
+						//cout << "What Department does the course belong to?: ";
+						//cin >> department_course;
+						//std::cin.ignore();
+						//cout << "Who is the Instructor of the course searched?: ";
+						//std::getline(cin, course_instructor);
+						////cin >> course_instructor;
+						//cout << "What Time does the class start (Enter: XX:XX AM/PM)?: ";
+						//std::getline(cin, course_start_time);
+						////cin >> course_start_time;
+						//cout << "On which days is the classes attended?: \n 1 - M W F \n 2 - T TH \n 3 - M W \n";
+						//cin >> days_int;
+						//if (days_int == 1) { Meeting_times = "M W F"; }
+						//else if (days_int == 2) { Meeting_times = "T TH"; }
+						//else if (days_int == 3) { Meeting_times = "M W"; }
+						//cout << "Which Semester is the course taught?: ";
+						//cin >> course_semester;
+						//cout << "Which year is the course taught?: ";
+						//cin >> course_year;
+						//cout << "How many credits is the course worth?: ";
+						//cin >> course_credits;
+						return_v = instructorUser.search_course(db, course_add_drop, instructorUser.first_name, instructorUser.last_name);
+						char* errMsg = nullptr;
+
+						int rc = sqlite3_exec(db, return_v.c_str(), [](void*, int argc, char** argv, char** azColName) -> int {
+							for (int i = 0; i < argc; ++i) {
+								std::cout << azColName[i] << ": " << (argv[i] ? argv[i] : "NULL") << "\t";
+							}
+							std::cout << "\n";
+							return 0;
+						}, nullptr, &errMsg);
+
+						if (rc != SQLITE_OK) {
+							std::cerr << "SQL error: " << errMsg << std::endl;
+							sqlite3_free(errMsg);
+						}
 					}
 					else if (user_input == 0)
 					{
@@ -448,7 +445,7 @@ int main()
 			else if (userType == "admin") {
 				Admin adminUser = Admin(user_first_name, user_last_name, user_ID);
 				while (hasExitUser == false) {
-					cout << " 1 - Add Course \n 2 - Remove Course \n 3 - Add User \n 4 - Remove User \n 5 - Search Roster \n 6 - Print Roster \n 7 - Search Course \n 8 - Print Course \n 0 - Exit \n";
+					cout << " 1 - Add Course \n 2 - Remove Course \n 3 - Add User \n 4 - Remove User \n 5 - Update User \n 6 - Search Roster \n 7 - Print Roster \n 8 - Search Course \n 9 - Print Course \n 0 - Exit \n";
 					cin >> user_input;
 					if (user_input == 1)
 					{
@@ -586,8 +583,9 @@ int main()
 							cin >> user_remove_Major;
 						}
 						else if (remove_user_type == 2) {
+							cin.ignore();
 							cout << "Instructor's Title?: ";
-							cin >> user_remove_Title;
+							getline(cin, user_remove_Title);
 							cout << "Instructor's Year of Hire?: ";
 							cin >> user_remove_YOH;
 							cout << "Instructor's Department?: ";
@@ -627,7 +625,58 @@ int main()
 					//	cin >> course_add_drop;
 					//	adminUser.remove_student_course(user_add_remove, course_add_drop);
 					//}
-					else if (user_input == 5)
+					else if (user_input == 5) {
+						cout << "What is the first name of the user that you want to update?: ";
+						cin >> user_searchf;
+						cout << "What is the last name of the user that you want to update?: ";
+						cin >> user_searchl;
+						cout << "User's ID?: ";
+						cin >> user_search_ID;
+						cout << "User's Email?: ";
+						cin >> user_search_Email;
+						cout << "User Type: \n 1 - Student \n 2 - Instructor \n 3 - Administrator \n";
+						cin >> search_user_type;
+						if (search_user_type == 1) {
+							cout << "User's Graduation Year?: ";
+							cin >> user_search_Grad_year;
+							cout << "What do you want to update their graduation year to?: ";
+							cin >> user_update_Grad_year;
+							cout << "User's Major?: ";
+							cin >> user_search_Major;
+							cout << "What do you want to update their major to?: ";
+							cin >> user_update_major;
+						}
+						else if (search_user_type == 2) {
+							cout << "Instructor's Title?: ";
+							cin >> user_search_Title;
+							cout << "What do you want to update their Title to?: ";
+							getline(cin, user_update_Title);
+							cout << "Instructor's Year of Hire?: ";
+							cin >> user_search_YOH;
+							cout << "Instructor's Department?: ";
+							cin >> user_search_Department;
+						}
+						else if (search_user_type == 3) {
+							cout << "Admin's Title?: ";
+							cin >> user_add_Title;
+							cin.ignore();
+							cout << "What do you want to update their Title to?: ";
+							getline(cin,user_update_Title);
+							//std::cin.ignore();
+							cout << "Admin's Office?: ";
+							std::getline(cin, user_add_Office);
+						}
+						return_v = adminUser.update_user(db, user_searchf, user_searchl, user_search_ID, user_search_Grad_year, user_update_Grad_year, user_search_Major, user_update_major, user_search_Email, search_user_type, user_search_Title, user_update_Title, user_search_YOH, user_search_Department, user_add_Office);
+						int rc = sqlite3_exec(db, return_v.c_str(), nullptr, nullptr, &errMsg);
+						if (rc != SQLITE_OK) {
+							std::cerr << "SQL error: " << errMsg << std::endl;
+							sqlite3_free(errMsg);
+						}
+						else {
+							std::cout << "New user successfully updated in database.\n";
+						}
+					}
+					else if (user_input == 6)
 					{
 						cout << "What is the first name of the user that you want to Search?: ";
 						cin >> user_searchf;
@@ -664,7 +713,7 @@ int main()
 						}
 						adminUser.search_roster( db, user_searchf, user_searchl, user_search_ID, user_search_Grad_year, user_search_Major, user_search_Email, search_user_typestr, user_search_Title, user_search_YOH, user_search_Department, user_search_Office);
 					}
-					else if (user_input == 6)
+					else if (user_input == 7)
 					{
 						adminUser.print_roster(student_query, instructor_query, admin_query);
 
@@ -691,7 +740,7 @@ int main()
 							sqlite3_free(errMsg);
 						}
 					}
-					else if (user_input == 7)
+					else if (user_input == 8)
 					{
 						cout << "What is the name of the Course that you want to Search?: ";
 						cin >> course_add_drop;
@@ -720,7 +769,7 @@ int main()
 						cin >> course_credits;
 						adminUser.search_courses(db, course_add_drop, Course_CRN, department_course, course_instructor, course_start_time, Meeting_times, course_semester, course_year, course_credits);
 					}
-					else if (user_input == 8)
+					else if (user_input == 9)
 					{
 						cout << "What course do you want to print?: ";
 						cin >> course_printed;
@@ -742,7 +791,7 @@ int main()
 			userType = "";
 			user_first_name = "";
 			user_last_name = "";
-			user_ID = "";
+			user_ID = 0;
 			course_add_drop = "";
 			course_searched = "";
 			course_printed = "";
