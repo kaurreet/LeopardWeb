@@ -1,26 +1,28 @@
 #pragma once
 #include "Student.h"
 #include <set>
+extern "C" {
+#include "sqlite3.h"
+}
 using std::set;
 class Instructor :
     public User
 {
 	string first_name;
 	string last_name;
-	string ID;
+	int ID;
 	set<string> courses_taught;
 public:
 	//constructor
-	Instructor();
-	Instructor(string in_fname, string in_lname, string in_ID);
+	Instructor(string in_fname, string in_lname, int in_ID);
 	//methods
-	void show_first_name();
-	void show_last_name();
-	void show_all();
-	void show_ID();
-	void search_course(string in_course);
-	void print_class_list(string in_course);
-	void print_schedule();
+	string get_first_name();
+	string get_last_name();
+	string get_all();
+	int get_ID();
+	string search_course(sqlite3* db, string course_add_drop, string in_fname, string in_lname);
+	void print_class_list(string &student_query);
+	string print_schedule(string in_fname, string in_lname);
 	//destructor
 	~Instructor();
 
