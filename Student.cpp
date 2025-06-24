@@ -1,86 +1,66 @@
 #include <iostream>
 #include <algorithm>
 #include "Student.h"
+#include <string>
+extern "C" {
+#include "sqlite3.h"
+}
 using std::cin;
 using std::cout;
 using std::endl;
 using std::string;
+using std::to_string;
 //constructor
-Student::Student() {
-	first_name = "Andy";
-	last_name = "Le";
-}
-Student::Student(string in_fname, string in_lname, string in_ID) {
+Student::Student(string in_fname, string in_lname, int in_ID) : User(in_fname, in_lname, in_ID){
 	first_name = in_fname;
 	last_name = in_lname;
 	ID = in_ID;
 }
 //methods
-void Student::show_first_name() {
-	cout << first_name << endl;
-	//return first_name;
-	
-}
-void Student::show_last_name() {
-	cout << last_name << endl;
-	//return last_name;
-	
-}
-void Student::show_ID() {
-	cout << ID << endl;
-	//return ID;
-	
-}
-void Student::show_all() {
-	cout << first_name << endl;
-	cout << last_name << endl;
-	cout << ID << endl;
-	//return first_name, last_name, ID;
-	
-}
-void Student::search_course(string in_course) {
-	cout << in_course << " Course Searched!" << endl;
-	if (courses_enrolled.find(in_course) != courses_enrolled.end())
-		cout << "You are currently enrolled in " << in_course << "." << endl;
-	else
-		cout << "You are not enrolled in " << in_course << "." << endl;
-	
-}
-void Student::add_drop_course(string in_course, string in_add_drop){
-	std::transform(in_add_drop.begin(), in_add_drop.end(), in_add_drop.begin(), ::tolower);
-	std::transform(in_course.begin(), in_course.end(), in_course.begin(), ::toupper);
+void Student::search_course(sqlite3* db, string course_add_drop, int Course_CRN, string department_course, string course_instructor, string course_start_time, string Meeting_times, string course_semester, int course_year, int course_credits) {
+	sqlite3_stmt* stmt;
+	//int rc = sqlite3_open("assignment3.db", &db);
+	const char* sql = R"(
+        SELECT * FROM COURSE
+        WHERE CRN = ? AND TITLE = ? AND DEPARTMENT = ? AND INSTRUCTOR = ? AND TIME = ? AND
+              DoftW = ? AND SEMESTER = ? AND YEAR = ? AND CREDITS = ?)";
 
-	if (in_add_drop == "add")
-	{
-		auto result = courses_enrolled.insert(in_course);
-		if (result.second)
-			cout << in_course << " Course Added!" << endl;
-		else
-			cout << in_course << " is already in your schedule." << endl;
+	int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+	if (rc != SQLITE_OK) {
+		std::cerr << "Failed to prepare statement. Error: " << sqlite3_errmsg(db) << std::endl;
+		return;
 	}
-	else if (in_add_drop == "drop")
-	{
-		size_t removed = courses_enrolled.erase(in_course);
-		if (removed)
-			cout << in_course << " Course Dropped!" << endl;
-		else
-			cout << in_course << " is not in your schedule" << endl;
+
+	sqlite3_bind_int(stmt, 1, Course_CRN);
+	sqlite3_bind_text(stmt, 2, course_add_drop.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 3, department_course.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 4, course_instructor.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 5, course_start_time.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 6, Meeting_times.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 7, course_semester.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_int(stmt, 8, course_year);
+	sqlite3_bind_int(stmt, 9, course_credits);
+
+	rc = sqlite3_step(stmt);
+	if (rc == SQLITE_ROW) {
+		cout << "Course found in the database!" << endl;
 	}
 	else {
-		cout << "Neither add or drop was chosen." << endl;
+		cout << "Course NOT found in the database!" << endl;
 	}
-	
+	sqlite3_finalize(stmt);	
 }
-void Student::print_schedule() {
-	cout << "Schedule Printed!" << endl;
-	if (courses_enrolled.empty()) {
-		cout << "No courses enrolled.\n";
-	}
-	else {
-		for (auto& course : courses_enrolled)
-			cout << "* " << course << endl;
-	}
-	
+string Student::add_course(sqlite3* DB, string in_course_name, int ID){
+	string sql = "INSERT INTO REGISTERED (CRN, TITLE, DEPARTMENT, TIME, doftw, SEMESTER, YEAR, CREDITS, StudentID)"
+		"SELECT CRN, TITLE, DEPARTMENT, TIME, DoftW, SEMESTER, YEAR, CREDITS, " + to_string(ID) + " " + "FROM COURSE WHERE TITLE = '" + in_course_name + "';";
+	return sql;
+}
+string Student::remove_course(sqlite3* DB, string in_course_name, int ID) {
+	//cout << "Course Added!";
+	return "DELETE FROM REGISTERED WHERE TITLE = '" + in_course_name + "' AND studentID = '" + to_string(ID) + "';";
+}
+string Student::print_schedule() {
+	return "SELECT * FROM REGISTERED WHERE StudentID = " + to_string(ID) + ";";
 }
 //destructor
 Student::~Student() {
