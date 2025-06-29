@@ -1,10 +1,12 @@
 #include "Instructor.h"
 #include <iostream>
 #include <algorithm>
+#include <string>
 using std::cin;
 using std::cout;
 using std::endl;
 using std::string;
+using std::to_string;
 extern "C" {
 #include "sqlite3.h"
 }
@@ -70,17 +72,39 @@ int Instructor::get_ID() {
 //	}
 //	sqlite3_finalize(stmt);
 //}
-string Instructor::search_course(sqlite3* db, string course_add_drop, string in_fname, string in_lname) {
-	//string search_print_roster;
-	//search_print_roster = "SELECT * FROM ";
-	string sql = "SELECT STUDENT.NAME, STUDENT.SURNAME, STUDENT.ID "
-				 "FROM STUDENT "
-				 "JOIN REGISTERED ON STUDENT.ID = REGISTERED.StudentID "
-				 "JOIN COURSE ON REGISTERED.CRN = COURSE.CRN "
-				 "WHERE COURSE.TITLE = '" + course_add_drop + "' "
-				 "AND COURSE.INSTRUCTOR = '" + in_fname + " " + in_lname + "';";
+//string Instructor::search_course(sqlite3* db, string course_add_drop, string in_fname, string in_lname) {
+//	//string search_print_roster;
+//	//search_print_roster = "SELECT * FROM ";
+//	string sql = "SELECT STUDENT.NAME, STUDENT.SURNAME, STUDENT.ID "
+//				 "FROM STUDENT "
+//				 "JOIN REGISTERED ON STUDENT.ID = REGISTERED.StudentID "
+//				 "JOIN COURSE ON REGISTERED.CRN = COURSE.CRN "
+//				 "WHERE COURSE.TITLE = '" + course_add_drop + "' "
+//				 "AND COURSE.INSTRUCTOR = '" + in_fname + " " + in_lname + "';";
+//	return sql;
+//}
+string Instructor::search_course(sqlite3* db, string course_add_drop, int in_CRN, string in_dep, string in_instruct, string in_parameter) {
+	string sql;
+
+	if (in_parameter == "no") {
+		sql = "SELECT * FROM COURSE;";
+	}
+	else if (in_parameter == "name") {
+		sql = "SELECT * FROM COURSE WHERE TITLE = '" + course_add_drop + "';";
+	}
+	else if (in_parameter == "crn") {
+		sql = "SELECT * FROM COURSE WHERE CRN = " + to_string(in_CRN) + ";";
+	}
+	else if (in_parameter == "dep") {
+		sql = "SELECT * FROM COURSE WHERE DEPARTMENT = '" + course_add_drop + "';";
+	}
+	else if (in_parameter == "instructor") {
+		sql = "SELECT * FROM COURSE WHERE INSTRUCTOR = '" + in_instruct + "';";
+	}
+
 	return sql;
 }
+
 void Instructor::print_class_list(string &student_query) {
 	student_query = "SELECT * FROM STUDENT;";
 }
