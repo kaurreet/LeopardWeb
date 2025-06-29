@@ -20,7 +20,7 @@ public:
 	string get_last_name();
 	string get_all();
 	int get_ID();
-	string search_course(sqlite3* db, string course_add_drop, string in_fname, string in_lname);
+	string search_course(sqlite3* db, string course_add_drop, int in_CRN, string in_dep, string in_instruct, string in_parameter);
 	void print_class_list(string &student_query);
 	string print_schedule(string in_fname, string in_lname);
 	//destructor
