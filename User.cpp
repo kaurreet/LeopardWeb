@@ -4,6 +4,9 @@ using std::cout;
 using std::endl;
 using std::string;
 //constructor
+User::User() {
+
+}
 User::User(string in_fname, string in_lname, int in_ID) {
 	first_name = in_fname;
 	last_name = in_lname;
