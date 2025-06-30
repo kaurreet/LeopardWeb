@@ -15,10 +15,19 @@ using std::to_string;
 //constructor
 Student::Student() {}
 
-Student::Student(string in_fname, string in_lname, int in_ID) : User(in_fname, in_lname, in_ID){
+Student::Student(string in_fname, string in_lname, int in_ID) {
 	first_name = in_fname;
 	last_name = in_lname;
 	ID = in_ID;
+}
+
+Student::Student(string in_fname, string in_lname, int in_ID, string in_email, int in_gradyear, string in_major){
+	first_name = in_fname;
+	last_name = in_lname;
+	ID = in_ID;
+	email = in_email;
+	gradYear = in_gradyear;
+	major = in_major;
 }
 
 void Student::set_firstname(string in_fname) {
