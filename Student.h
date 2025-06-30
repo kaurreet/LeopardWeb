@@ -12,11 +12,29 @@ class Student :
 	string first_name;
 	string last_name;
 	int ID;
-	set<string> courses_enrolled;
+	string email;
+	int gradYear;
+	string major;
+	//set<string> courses_enrolled;
 public:
 	//constructor
+	Student();
 	Student(string in_fname, string in_lname, int in_ID);
 	//methods
+	void set_firstname(string in_fname);
+	void set_lastname(string in_lname);
+	void set_ID(int in_ID);
+	void set_email(string in_email);
+	void set_gradYear(int in_gradyear);
+	void set_major(string in_major);
+
+	string get_firstname();
+	string get_lastname();
+	int get_ID();
+	string get_email();
+	int get_gradYear();
+	string get_major();
+
 	string search_course(sqlite3* db, string course_add_drop, int in_CRN, string in_dep, string in_instruct, string in_parameter);
 	string add_course(sqlite3* DB, string in_course_name, int ID);
 	string remove_course(sqlite3* DB, string in_course_name, int ID);
