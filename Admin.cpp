@@ -15,19 +15,13 @@ Admin::Admin(string in_fname, string in_lname, int in_ID) : User(in_fname,in_lna
 	last_name = in_lname;
 	ID = in_ID;
 }
-void Admin::show_first_name() {
-	cout << first_name << endl;
-}
-void Admin::show_last_name() {
-	cout << last_name << endl;
-}
 void Admin::show_all() {
 	cout << first_name << endl;
 	cout << last_name << endl;
 	cout << ID << endl;
 }
-void Admin::show_ID() {
-	cout << ID << endl;
+int Admin::get_ID() {
+	return ID;
 }
 string Admin::add_course(string in_course_name, int in_CRN, string in_Department, string in_Instructor, string in_time, string in_Doftw, string in_Semester, int in_year, int in_credits) {
 	//cout << "Course Added!";
@@ -37,22 +31,22 @@ string Admin::remove_course(string in_course_name, int in_CRN, string in_Departm
 	//cout << "Course Removed!";
 	return "DELETE FROM COURSE WHERE CRN = " + std::to_string(in_CRN) + " AND TITLE = '" + in_course_name + "' AND DEPARTMENT = '" + in_Department + "' AND INSTRUCTOR = '" + in_Instructor + "' AND TIME = '" + in_time + "' AND Doftw = '" + in_Doftw + "' AND SEMESTER = '" + in_Semester + "' AND YEAR = " + std::to_string(in_year) + " AND CREDITS = " + std::to_string(in_credits) + ";";
 }
-string Admin::add_user(string in_user_add_f, string in_user_add_l, string in_user_add_ID, string in_user_add_Grad_year, string in_user_add_Major, string in_user_add_Email, int add_user_type, string user_add_Title, string user_add_YOH, string user_add_Department, string user_add_Office) {
+string Admin::add_user(string in_user_add_f, string in_user_add_l, int in_user_add_ID, int in_user_add_Grad_year, string in_user_add_Major, string in_user_add_Email, int add_user_type, string user_add_Title, int user_add_YOH, string user_add_Department, string user_add_Office) {
 	string user_type_str;
 	switch (add_user_type){
 		case 3:
 			if (add_user_type == 3) { user_type_str = "admin"; }
-			return "INSERT INTO ADMIN VALUES(" + in_user_add_ID + ", '" + in_user_add_f + "', '" + in_user_add_l + "', '" + user_type_str + "', '" + user_add_Office + "', '" + in_user_add_Email + "');";
+			return "INSERT INTO ADMIN VALUES(" + std::to_string(in_user_add_ID) + ", '" + in_user_add_f + "', '" + in_user_add_l + "', '" + user_type_str + "', '" + user_add_Office + "', '" + in_user_add_Email + "');";
 		break;
 
 		case 2:
 			if (add_user_type == 2) { user_type_str = "instructor"; }
-			return "INSERT INTO INSTRUCTOR VALUES(" + in_user_add_ID + ", '" + in_user_add_f + "', '" + in_user_add_l + "', '" + user_add_Title + "', " + user_add_YOH + ", '" + user_add_Department + "', '" + in_user_add_Email + "');";
+			return "INSERT INTO INSTRUCTOR VALUES(" + std::to_string(in_user_add_ID) + ", '" + in_user_add_f + "', '" + in_user_add_l + "', '" + user_add_Title + "', " + std::to_string(user_add_YOH)+", '" + user_add_Department + "', '" + in_user_add_Email + "');";
 		break;
 
 		case 1:
 			if (add_user_type == 1) { user_type_str = "student"; }
-			return "INSERT INTO STUDENT VALUES(" + in_user_add_ID + ", '" + in_user_add_f + "', '" + in_user_add_l + "', " + in_user_add_Grad_year + ", '" + in_user_add_Major + "', '" + in_user_add_Email + "');";
+			return "INSERT INTO STUDENT VALUES(" + std::to_string(in_user_add_ID) + ", '" + in_user_add_f + "', '" + in_user_add_l + "', " + std::to_string(in_user_add_Grad_year) + ", '" + in_user_add_Major + "', '" + in_user_add_Email + "');";
 		break;
 	}
 }
@@ -251,6 +245,45 @@ string Admin::print_courses(string in_course) {
 		query = "SELECT * FROM COURSE WHERE TITLE LIKE '%" + in_course + "%';";
 	return query;
 }
+
+void Admin::set_firstname(string in_fname) {
+	first_name = in_fname;
+}
+
+void Admin::set_lastname(string in_lname) {
+	last_name = in_lname;
+}
+
+void Admin::set_email(string in_email) {
+	email = in_email;
+}
+
+void Admin::set_title(string in_title) {
+	title = in_title;
+}
+void Admin::set_office(string in_office) {
+	office = in_office;
+}
+
+string Admin::get_firstname() {
+	return first_name;
+}
+
+string Admin::get_lastname() {
+	return last_name;
+}
+
+string Admin::get_email() {
+	return email;
+}
+
+string Admin::get_title() {
+	return title;
+}
+string Admin::get_office() {
+	return office;
+}
+
 //destructor
 Admin::~Admin() {
 
