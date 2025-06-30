@@ -202,12 +202,12 @@ int main()
 		"INSERT INTO COURSE VALUES(50005, 'Pyschology', 'BCOS', 'Will Wundt', '8:00 AM', 'M W F', 'Fall', 2022, 3);"
 		"INSERT INTO COURSE VALUES(50006, 'Chemistry', 'BSME', 'Alfred Nobel', '7:00 PM', 'M W F', 'Winter', 2022, 2);"
 
-		"INSERT INTO COURSE VALUES(20001, 'William', 'Gibson', 'Instructor', 1984, 'ENGL', 'Fall', 2022, 4);"
-		"INSERT INTO COURSE VALUES(20002, 'Reed', 'Solomon', 'Instructor', 1960, 'TECH', 'Winter', 2022, 4);"
-		"INSERT INTO COURSE VALUES(20003, 'Isaac', 'Asimov', 'Instructor', 1950, 'LITR', 'Fall', 2022, 4);"
-		"INSERT INTO COURSE VALUES(20004, 'Subrahmanyan', 'Instructor', 1983, 'PHYS', 'M W F', 'Winter', 2022, 3);"
-		"INSERT INTO COURSE VALUES(20005, 'Will', 'Wundt', 'Instructor', 2003, 'PSYC', 'Fall', 2022, 3);"
-		"INSERT INTO COURSE VALUES(20006, 'Alfred', 'Nobel', 'Instructor', 2022, 'CHEM', 'Winter', 2022, 2);"
+		"INSERT INTO INSTRUCTOR VALUES(20001, 'William', 'Gibson', 'Instructor', 1984, 'ENGL', 'Fall', 2022, 4);"
+		"INSERT INTO INSTRUCTOR VALUES(20002, 'Reed', 'Solomon', 'Instructor', 1960, 'TECH', 'Winter', 2022, 4);"
+		"INSERT INTO INSTRUCTOR VALUES(20003, 'Isaac', 'Asimov', 'Instructor', 1950, 'LITR', 'Fall', 2022, 4);"
+		"INSERT INTO INSTRUCTOR VALUES(20004, 'Subrahmanyan', 'Instructor', 1983, 'PHYS', 'M W F', 'Winter', 2022, 3);"
+		"INSERT INTO INSTRUCTOR VALUES(20005, 'Will', 'Wundt', 'Instructor', 2003, 'PSYC', 'Fall', 2022, 3);"
+		"INSERT INTO INSTRUCTOR VALUES(20006, 'Alfred', 'Nobel', 'Instructor', 2022, 'CHEM', 'Winter', 2022, 2);"
 	);
 
 	create_table(db, sql.c_str());
@@ -1064,7 +1064,9 @@ int main()
 		if (exitchoice == "yes") {
 			hasExit = true;
 		}
+		else
 		// Reset all critical variables used in program
+		{
 			userType = "";
 			user_first_name = "";
 			user_last_name = "";
@@ -1085,6 +1087,7 @@ int main()
 				hasExit = true;
 			else
 				hasExit = false;
+		}
 	}
 	return 0;
 }	
