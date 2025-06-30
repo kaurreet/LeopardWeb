@@ -20,6 +20,7 @@ public:
 	//constructor
 	Student();
 	Student(string in_fname, string in_lname, int in_ID);
+	Student(string in_fname, string in_lname, int in_ID, string in_email, int in_gradyear, string in_major);
 	//methods
 	void set_firstname(string in_fname);
 	void set_lastname(string in_lname);
