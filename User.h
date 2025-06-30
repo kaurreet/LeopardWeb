@@ -9,8 +9,10 @@ class User
 	string first_name;
 	string last_name;
 	int ID;
+	string email;
 public:
 	//constructor
+	User();
 	User(string in_fname, string in_lname, int in_ID);
 	//methods
 	virtual string get_first_name();
