@@ -13,11 +13,58 @@ using std::endl;
 using std::string;
 using std::to_string;
 //constructor
+Student::Student() {}
+
 Student::Student(string in_fname, string in_lname, int in_ID) : User(in_fname, in_lname, in_ID){
 	first_name = in_fname;
 	last_name = in_lname;
 	ID = in_ID;
 }
+
+void Student::set_firstname(string in_fname) {
+	first_name = in_fname;
+}
+void Student::set_lastname(string in_lname) {
+	last_name = in_lname;
+}
+void Student::set_ID(int in_ID) {
+	ID = in_ID;
+}
+
+void Student::set_email(string in_email) {
+	email = in_email;
+}
+
+void Student::set_gradYear(int in_gradyear) {
+	gradYear = in_gradyear;
+}
+
+void Student::set_major(string in_major) {
+	major = in_major;
+}
+
+string Student::get_firstname() {
+	return first_name;
+}
+string Student::get_lastname() {
+	return last_name;
+}
+int Student::get_ID() {
+	return ID;
+}
+
+string Student::get_email() {
+	return email;
+}
+
+int Student::get_gradYear() {
+	return gradYear;
+}
+
+string Student::get_major() {
+	return major;
+}
+
 //methods
 //void Student::search_course(sqlite3* db, string course_add_drop, int in_ID, int (*callback)(void*, int, char**, char**)) {
 //	sqlite3_stmt* stmt;
