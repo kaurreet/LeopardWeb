@@ -10,10 +10,19 @@ using std::cout;
 using std::endl;
 using std::string;
 
-Admin::Admin(string in_fname, string in_lname, int in_ID) : User(in_fname,in_lname, in_ID){
+Admin::Admin(string in_fname, string in_lname, int in_ID) {
 	first_name = in_fname;
 	last_name = in_lname;
 	ID = in_ID;
+}
+
+Admin::Admin(string in_fname, string in_lname, int in_ID, string in_email, string in_title, string in_office) {
+	first_name = in_fname;
+	last_name = in_lname;
+	ID = in_ID;
+	email = in_email;
+	title = in_title;
+	office = in_office;
 }
 void Admin::show_all() {
 	cout << first_name << endl;
@@ -50,22 +59,22 @@ string Admin::add_user(string in_user_add_f, string in_user_add_l, int in_user_a
 		break;
 	}
 }
-string Admin::remove_user(string in_user_removef, string in_user_removel, string in_user_remove_ID, string in_user_remove_Grad_year, string in_user_remove_Major, string in_user_remove_Email, int remove_user_type, string user_remove_Title, string user_remove_YOH, string user_remove_Department, string user_remove_Office) {
+string Admin::remove_user(string in_user_remove_f, string in_user_remove_l, int in_user_remove_ID, int in_user_remove_Grad_year, string in_user_remove_Major, string in_user_remove_Email, int remove_user_type, string user_remove_Title, int user_remove_YOH, string user_remove_Department, string user_remove_Office) {
 	string user_type_str;
 	switch (remove_user_type) {
 	case 3:
 		if (remove_user_type == 3) { user_type_str = "admin"; }
-			return "DELETE FROM ADMIN WHERE ID = " + in_user_remove_ID + " AND NAME = '" + in_user_removef + "' AND SURNAME = '" + in_user_removel + "' AND OFFICE = '" + user_remove_Office + "' AND EMAIL = '" + in_user_remove_Email + "';";
+			return "DELETE FROM ADMIN WHERE ID = " + std::to_string(in_user_remove_ID) + " AND NAME = '" + in_user_remove_f + "' AND SURNAME = '" + in_user_remove_l + "' AND OFFICE = '" + user_remove_Office + "' AND EMAIL = '" + in_user_remove_Email + "';";
 		break;
 
 		case 2:
 			if (remove_user_type == 2) { user_type_str = "instructor"; }
-			return "DELETE FROM INSTRUCTOR WHERE ID = " + in_user_remove_ID + " AND NAME = '" + in_user_removef + "' AND SURNAME = '" + in_user_removel + "' AND TITLE = '" + user_remove_Title + "' AND HIREYEAR = " + user_remove_YOH + " AND DEPT = '" + user_remove_Department + "' AND EMAIL = '" + in_user_remove_Email + "';";
+			return "DELETE FROM INSTRUCTOR WHERE ID = " + std::to_string(in_user_remove_ID) + " AND NAME = '" + in_user_remove_f + "' AND SURNAME = '" + in_user_remove_l + "' AND TITLE = '" + user_remove_Title + "' AND HIREYEAR = " + std::to_string(user_remove_YOH) + " AND DEPT = '" + user_remove_Department + "' AND EMAIL = '" + in_user_remove_Email + "';";
 		break;
 
 		case 1:
 			if (remove_user_type == 1) { user_type_str = "student"; }
-			return "DELETE FROM STUDENT WHERE ID = " + in_user_remove_ID + " AND NAME = '" + in_user_removef + "' AND SURNAME = '" + in_user_removel + "' AND GRADYEAR = " + in_user_remove_Grad_year + " AND MAJOR = '" + in_user_remove_Major + "' AND EMAIL = '" + in_user_remove_Email + "';";
+			return "DELETE FROM STUDENT WHERE ID = " + std::to_string(in_user_remove_ID) + " AND NAME = '" + in_user_remove_f + "' AND SURNAME = '" + in_user_remove_l + "' AND GRADYEAR = " + std::to_string(in_user_remove_Grad_year) + " AND MAJOR = '" + in_user_remove_Major + "' AND EMAIL = '" + in_user_remove_Email + "';";
 		break;
 	}
 }
@@ -203,38 +212,26 @@ void Admin::search_roster(sqlite3* db, string user_searchf, string user_searchl,
 void Admin::print_roster(string &student_query, string &instructor_query, string &admin_query) {
 	student_query = "SELECT * FROM STUDENT;"; instructor_query = "SELECT * FROM INSTRUCTOR;"; admin_query = "SELECT * FROM ADMIN;";
 }
-void Admin::search_courses(sqlite3* db, string course_add_drop, int Course_CRN, string department_course, string course_instructor, string course_start_time, string Meeting_times, string course_semester, int course_year, int course_credits) {
-	sqlite3_stmt* stmt;
-	//int rc = sqlite3_open("assignment3.db", &db);
-	const char* sql = R"(
-        SELECT * FROM COURSE
-        WHERE CRN = ? AND TITLE = ? AND DEPARTMENT = ? AND INSTRUCTOR = ? AND TIME = ? AND
-              DoftW = ? AND SEMESTER = ? AND YEAR = ? AND CREDITS = ?)";
+string Admin::search_course(sqlite3* db, string course_add_drop, int in_CRN, string in_dep, string in_instruct, string in_parameter) {
+	string sql;
 
-	int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
-	if (rc != SQLITE_OK) {
-		std::cerr << "Failed to prepare statement. Error: " << sqlite3_errmsg(db) << std::endl;
-		return;
+	if (in_parameter == "no") {
+		sql = "SELECT * FROM COURSE;";
+	}
+	else if (in_parameter == "name") {
+		sql = "SELECT * FROM COURSE WHERE TITLE = '" + course_add_drop + "';";
+	}
+	else if (in_parameter == "crn") {
+		sql = "SELECT * FROM COURSE WHERE CRN = " + std::to_string(in_CRN) + ";";
+	}
+	else if (in_parameter == "dep") {
+		sql = "SELECT * FROM COURSE WHERE DEPARTMENT = '" + course_add_drop + "';";
+	}
+	else if (in_parameter == "instructor") {
+		sql = "SELECT * FROM COURSE WHERE INSTRUCTOR = '" + in_instruct + "';";
 	}
 
-	sqlite3_bind_int(stmt, 1, Course_CRN);
-	sqlite3_bind_text(stmt, 2, course_add_drop.c_str(), -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(stmt, 3, department_course.c_str(), -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(stmt, 4, course_instructor.c_str(), -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(stmt, 5, course_start_time.c_str(), -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(stmt, 6, Meeting_times.c_str(), -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(stmt, 7, course_semester.c_str(), -1, SQLITE_TRANSIENT);
-	sqlite3_bind_int(stmt, 8, course_year);
-	sqlite3_bind_int(stmt, 9, course_credits);
-
-	rc = sqlite3_step(stmt);
-	if (rc == SQLITE_ROW) {
-		cout << "Course found in the database!" << endl;
-	}
-	else {
-		cout << "Course NOT found in the database!" << endl;
-	}
-	sqlite3_finalize(stmt);
+	return sql;
 }
 string Admin::print_courses(string in_course) {
 	string query;
