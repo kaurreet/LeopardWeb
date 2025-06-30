@@ -181,12 +181,12 @@ int main()
 
 	string user_removef;
 	string user_removel;
-	string user_remove_ID;
-	string user_remove_Grad_year;
+	int user_remove_ID;
+	int user_remove_Grad_year;
 	string user_remove_Major;
 	string user_remove_Email;
 	string user_remove_Title;
-	string user_remove_YOH;
+	int user_remove_YOH;
 	string user_remove_Department;
 	string user_remove_Office;
 	int remove_user_type;
@@ -548,6 +548,7 @@ int main()
 						while (hasExitUser == false) {
 							cout << " 1 - Add Course \n 2 - Remove Course \n 3 - Add User \n 4 - Remove User \n 5 - Update User \n 6 - Search Roster \n 7 - Print Roster \n 8 - Search Course \n 9 - Print Course \n 0 - Exit \n";
 							cin >> user_input;
+							Course* CourseAttr = new Course();
 							if (user_input == 1)
 							{
 								cout << "What is the name of the Course that you want to add?: ";
@@ -575,8 +576,8 @@ int main()
 								cin >> course_year;
 								cout << "How many credits is the course worth?: ";
 								cin >> course_credits;
-								Course CourseAttr = Course((int)Course_CRN, course_add_drop, department_course, course_instructor, course_start_time, Meeting_times, course_semester, (int)course_year, (int)course_credits);
-								return_v = adminUser.add_course(CourseAttr.get_title(), CourseAttr.get_CRN(), CourseAttr.get_department(), CourseAttr.get_instructor(), CourseAttr.get_time(), CourseAttr.get_days(), CourseAttr.get_semester(), CourseAttr.get_year(), CourseAttr.get_credits());
+								Course* CourseAttr = new Course((int)Course_CRN, course_add_drop, department_course, course_instructor, course_start_time, Meeting_times, course_semester, (int)course_year, (int)course_credits);
+								return_v = adminUser.add_course(CourseAttr->get_title(), CourseAttr->get_CRN(), CourseAttr->get_department(), CourseAttr->get_instructor(), CourseAttr->get_time(), CourseAttr->get_days(), CourseAttr->get_semester(), CourseAttr->get_year(), CourseAttr->get_credits());
 								int rc = sqlite3_exec(db, return_v.c_str(), nullptr, nullptr, &errMsg);
 								if (rc != SQLITE_OK) {
 									std::cerr << "SQL error while adding course: " << errMsg << std::endl;
@@ -613,7 +614,8 @@ int main()
 								cin >> course_year;
 								cout << "How many credits is the course worth?: ";
 								cin >> course_credits;
-								return_v = adminUser.remove_course(course_add_drop, Course_CRN, department_course, course_instructor, course_start_time, Meeting_times, course_semester, course_year, course_credits);
+								Course* CourseAttr = new Course((int)Course_CRN, course_add_drop, department_course, course_instructor, course_start_time, Meeting_times, course_semester, (int)course_year, (int)course_credits);
+								return_v = adminUser.remove_course(CourseAttr->get_title(), CourseAttr->get_CRN(), CourseAttr->get_department(), CourseAttr->get_instructor(), CourseAttr->get_time(), CourseAttr->get_days(), CourseAttr->get_semester(), CourseAttr->get_year(), CourseAttr->get_credits());
 								int rc = sqlite3_exec(db, return_v.c_str(), nullptr, nullptr, &errMsg);
 								if (rc != SQLITE_OK) {
 									std::cerr << "SQL error while deleting course: " << errMsg << std::endl;
@@ -636,10 +638,12 @@ int main()
 								cout << "User Type: \n 1 - Student \n 2 - Instructor \n 3 - Administrator \n";
 								cin >> add_user_type;
 								if (add_user_type == 1) {
-									cout << "User's Graduation Year?: ";
+									cout << "Student's Graduation Year?: ";
 									cin >> user_add_Grad_year;
-									cout << "User's Major?: ";
+									cout << "Student's Major?: ";
 									cin >> user_add_Major;
+									Student* Studenttemp = new Student(user_add_removef, user_add_removel, user_add_ID, user_add_Email, user_add_Grad_year, user_add_Major);
+									return_v = adminUser.add_user(user_add_removef, user_add_removel, user_add_ID, user_add_Grad_year, user_add_Major, user_add_Email, 1, "", 0, "", "");
 								}
 								else if (add_user_type == 2) {
 									cout << "Instructor's Title?: ";
@@ -648,6 +652,8 @@ int main()
 									cin >> user_add_YOH;
 									cout << "Instructor's Department?: ";
 									cin >> user_add_Department;
+									Instructor* Instructortemp = new Instructor(user_add_removef, user_add_removel, user_add_ID, user_add_Email, user_add_Title, user_add_YOH, user_add_Department);
+									return_v = adminUser.add_user(user_add_removef, user_add_removel, user_add_ID, 0, "", user_add_Email, 2, user_add_Title, user_add_YOH, user_add_Department, "");
 								}
 								else if (add_user_type == 3) {
 									cout << "Admin's Title?: ";
@@ -655,8 +661,10 @@ int main()
 									std::cin.ignore();
 									cout << "Admin's Office?: ";
 									std::getline(cin, user_add_Office);
+									Admin* Admintemp = new Admin(user_add_removef, user_add_removel, user_add_ID, user_add_Email, user_add_Title, user_add_Office);
+									return_v = adminUser.add_user(user_add_removef, user_add_removel, user_add_ID, 0, "", user_add_Email, 3, user_add_Title, 0, "", user_add_Office);
 								}
-								return_v = adminUser.add_user(user_add_removef, user_add_removel, user_add_ID, user_add_Grad_year, user_add_Major, user_add_Email, add_user_type, user_add_Title, user_add_YOH, user_add_Department, user_add_Office);
+								//return_v = adminUser.add_user(user_add_removef, user_add_removel, user_add_ID, user_add_Grad_year, user_add_Major, user_add_Email, add_user_type, user_add_Title, user_add_YOH, user_add_Department, user_add_Office);
 								int rc = sqlite3_exec(db, return_v.c_str(), nullptr, nullptr, &errMsg);
 								if (rc != SQLITE_OK) {
 									std::cerr << "SQL error: " << errMsg << std::endl;
@@ -683,6 +691,8 @@ int main()
 									cin >> user_remove_Grad_year;
 									cout << "User's Major?: ";
 									cin >> user_remove_Major;
+									Student* Studenttemp = new Student(user_removef, user_removel, user_remove_ID, user_remove_Email, user_remove_Grad_year, user_remove_Major);
+									return_v = adminUser.remove_user(Studenttemp->get_firstname(), Studenttemp->get_lastname(), Studenttemp->get_ID(), Studenttemp->get_gradYear(), Studenttemp->get_major(), Studenttemp->get_email(), 1, "", 0, "", "");
 								}
 								else if (remove_user_type == 2) {
 									cin.ignore();
@@ -692,6 +702,8 @@ int main()
 									cin >> user_remove_YOH;
 									cout << "Instructor's Department?: ";
 									cin >> user_remove_Department;
+									Instructor* Instructortemp = new Instructor(user_removef, user_removel, user_remove_ID, user_remove_Email, user_remove_Title, user_remove_YOH, user_remove_Department);
+									return_v = adminUser.remove_user(Instructortemp->get_firstname(), Instructortemp->get_lastname(), Instructortemp->get_ID(), 0, "", Instructortemp->get_email(), 2, Instructortemp->get_title(), Instructortemp->get_YOH(), Instructortemp->get_Department(), "");
 								}
 								else if (remove_user_type == 3) {
 									cout << "Admin's Title?: ";
@@ -699,8 +711,10 @@ int main()
 									std::cin.ignore();
 									cout << "Admin's Office?: ";
 									std::getline(cin, user_remove_Office);
+									Admin* Admintemp = new Admin(user_removef, user_removel, user_remove_ID, user_remove_Email, user_remove_Title, user_remove_Office);
+									return_v = adminUser.remove_user(Admintemp->get_firstname(), Admintemp->get_lastname(), Admintemp->get_ID(), 0, "", Admintemp->get_email(), 3, Admintemp->get_title(), 0, "", Admintemp->get_office());
 								}
-								return_v = adminUser.remove_user(user_removef, user_removel, user_remove_ID, user_remove_Grad_year, user_remove_Major, user_remove_Email, remove_user_type, user_remove_Title, user_remove_YOH, user_remove_Department, user_remove_Office);
+								//return_v = adminUser.remove_user(user_removef, user_removel, user_remove_ID, user_remove_Grad_year, user_remove_Major, user_remove_Email, remove_user_type, user_remove_Title, user_remove_YOH, user_remove_Department, user_remove_Office);
 								int rc = sqlite3_exec(db, return_v.c_str(), nullptr, nullptr, &errMsg);
 								if (rc != SQLITE_OK) {
 									std::cerr << "SQL error: " << errMsg << std::endl;
@@ -844,32 +858,59 @@ int main()
 							}
 							else if (user_input == 8)
 							{
-								cout << "What is the name of the Course that you want to Search?: ";
-								cin >> course_add_drop;
-								//std::transform(course_add_drop.begin(), course_add_drop.end(), course_add_drop.begin(), ::toupper);
-								cout << "What is the CRN of the Course that you want to Search?: ";
-								cin >> Course_CRN;
-								cout << "What Department does the course belong to?: ";
-								cin >> department_course;
-								std::cin.ignore();
-								cout << "Who is the Instructor of the course searched?: ";
-								std::getline(cin, course_instructor);
-								//cin >> course_instructor;
-								cout << "What Time does the class start (Enter: XX:XX AM/PM)?: ";
-								std::getline(cin, course_start_time);
-								//cin >> course_start_time;
-								cout << "On which days is the classes attended?: \n 1 - M W F \n 2 - T TH \n 3 - M W \n";
-								cin >> days_int;
-								if (days_int == 1) { Meeting_times = "M W F"; }
-								else if (days_int == 2) { Meeting_times = "T TH"; }
-								else if (days_int == 3) { Meeting_times = "M W"; }
-								cout << "Which Semester is the course taught?: ";
-								cin >> course_semester;
-								cout << "Which year is the course taught?: ";
-								cin >> course_year;
-								cout << "How many credits is the course worth?: ";
-								cin >> course_credits;
-								adminUser.search_courses(db, course_add_drop, Course_CRN, department_course, course_instructor, course_start_time, Meeting_times, course_semester, course_year, course_credits);
+								cout << "Do you want to search a course by a parameter? (If No, Enter no. If Yes, Enter name, crn, dep, instructor): ";
+								cin >> course_parameter;
+								if (course_parameter == "no") {
+									return_v = adminUser.search_course(db, "", 0, "", "", course_parameter);
+								}
+								else if (course_parameter == "name") {
+									cout << "What is the name of the Course that you want to Search?: ";
+									cin >> course_add_drop;
+									CourseAttr->set_title(course_add_drop);
+									return_v = adminUser.search_course(db, CourseAttr->get_title(), 0, "", "", course_parameter);
+								}
+								else if (course_parameter == "crn") {
+									cout << "What is the CRN of the Course that you want to Search?: ";
+									cin >> course_add_drop_int;
+									CourseAttr->set_CRN(course_add_drop_int);
+									return_v = adminUser.search_course(db, "", CourseAttr->get_CRN(), "", "", course_parameter);
+								}
+								else if (course_parameter == "dep") {
+									cout << "What is the Department of the Course that you want to Search?: ";
+									cin >> course_add_drop;
+									CourseAttr->set_department(course_add_drop);
+									return_v = adminUser.search_course(db, "", 0, CourseAttr->get_department(), "", course_parameter);
+								}
+								else if (course_parameter == "instructor") {
+									cout << "What is the Instructor of the Course that you want to Search?: ";
+									cin >> course_add_drop;
+									CourseAttr->set_instructor(course_add_drop);
+									return_v = adminUser.search_course(db, "", 0, "", CourseAttr->get_instructor(), course_parameter);
+								}
+								if (course_parameter != "no" && course_parameter != "name" && course_parameter != "crn" && course_parameter != "dep" && course_parameter != "instructor") {
+									cout << "Invalid parameter entered.\n";
+								}
+								else
+								{
+									cout << endl;
+									sqlite3_stmt* stmt_check;
+									int rc_check = sqlite3_prepare_v2(db, return_v.c_str(), -1, &stmt_check, nullptr);
+									int row_count = 0;
+
+									if (rc_check == SQLITE_OK) {
+										while (sqlite3_step(stmt_check) == SQLITE_ROW) {
+											row_count++;
+										}
+										sqlite3_finalize(stmt_check);
+									}
+
+									if (row_count == 0) {
+										std::cout << "Course not found in the database" << std::endl;
+									}
+									else {
+										sqlite3_exec(db, return_v.c_str(), callback, NULL, NULL);
+									}
+								}
 							}
 							else if (user_input == 9)
 							{
