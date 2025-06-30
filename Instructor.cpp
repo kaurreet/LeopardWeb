@@ -11,10 +11,21 @@ extern "C" {
 #include "sqlite3.h"
 }
 //constructor
-Instructor::Instructor(string in_fname, string in_lname, int in_ID) : Student::Student(in_fname, in_lname, in_ID){
+
+Instructor::Instructor(string in_fname, string in_lname, int in_ID) {
 	first_name = in_fname;
 	last_name = in_lname;
 	ID = in_ID;
+}
+
+Instructor::Instructor(string in_fname, string in_lname, int in_ID, string in_email, string in_title, int in_YOH, string in_department){
+	first_name = in_fname;
+	last_name = in_lname;
+	ID = in_ID;
+	email = in_email;
+	title = in_title;
+	YOH = in_YOH;
+	department = in_department;
 }
 //methods
 string Instructor::get_first_name() {
