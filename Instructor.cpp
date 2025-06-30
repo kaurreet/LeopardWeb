@@ -11,7 +11,7 @@ extern "C" {
 #include "sqlite3.h"
 }
 //constructor
-Instructor::Instructor(string in_fname, string in_lname, int in_ID) : User::User(in_fname, in_lname, in_ID){
+Instructor::Instructor(string in_fname, string in_lname, int in_ID) : Student::Student(in_fname, in_lname, in_ID){
 	first_name = in_fname;
 	last_name = in_lname;
 	ID = in_ID;
@@ -32,6 +32,19 @@ int Instructor::get_ID() {
 	return ID;
 
 }
+
+string Instructor::get_title() {
+	return title;
+}
+
+int Instructor::get_YOH() {
+	return YOH;
+}
+
+string Instructor::get_Department() {
+	return department;
+}
+
 //string Instructor::get_all() {
 //	cout << first_name << endl;
 //	cout << last_name << endl;
@@ -111,6 +124,45 @@ void Instructor::print_class_list(string &student_query) {
 string Instructor::print_schedule(string in_fname, string in_lname) {
 	return "SELECT * FROM COURSE WHERE INSTRUCTOR = '" + in_fname + " " + in_lname + "';";
 }
+
+void Instructor::set_title(string in_title) {
+	title = in_title;
+}
+void Instructor::set_YOH(int in_YOH) {
+	YOH = in_YOH;
+}
+void Instructor::set_Department(string in_department) {
+	department = in_department;
+}
+
+
+string Instructor::get_studentname(int student_id) {
+	return "SELECT NAME, SURNAME FROM STUDENT WHERE ID = " + std::to_string(student_id) + ";";
+}
+
+string Instructor::getstudent_classlist(int in_student_id) {
+	return "SELECT COURSE.CRN, COURSE.TITLE, COURSE.DEPARTMENT, COURSE.INSTRUCTOR "
+	       "FROM COURSE "
+	       "JOIN REGISTERED ON COURSE.CRN = REGISTERED.CRN "
+		   "WHERE REGISTERED.StudentID = '" + to_string(in_student_id) + "';";
+}
+
+string Instructor::getcourse_roster(string title) {
+	return "SELECT STUDENT.ID, STUDENT.NAME, STUDENT.SURNAME "
+		"FROM STUDENT "
+		"JOIN REGISTERED ON STUDENT.ID = REGISTERED.StudentID "
+		"WHERE REGISTERED.TITLE = '" + title +"';";
+}
+
+string Instructor::get_courseinfo(string title) {
+	return "SELECT TITLE, INSTRUCTOR, CRN FROM COURSE WHERE TITLE = '" + title + "';";
+}
+
+
+void Instructor::set_email(string in_email) {
+	email = in_email;
+}
+
 //destructor
 Instructor::~Instructor() {
 
