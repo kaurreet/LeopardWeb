@@ -11,6 +11,7 @@
 extern "C" {
 	#include "sqlite3.h"
 }
+//#include <gtest/gtest.h>
 using std::cin;
 using std::cout;
 using std::endl;
@@ -967,7 +968,8 @@ int main()
 				int user_add_YOH;
 				string user_add_Department;
 				string user_add_Office;
-				string newUser_Grad_year, newUser_Major;
+				int newUser_Grad_year;
+				string newUser_Major;
 
 				string user_insert;
 
@@ -982,11 +984,13 @@ int main()
 					cout << "Enter Email: ";
 					cin >> email;
 					studentUser->set_email(email);
-					studentUser->set_lastname(user_last_name);
+					//studentUser->set_lastname(user_last_name);
 					cout << "Enter Graduation Year: ";
 					cin >> newUser_Grad_year;
+					studentUser->set_gradYear(newUser_Grad_year);
 					cout << "Enter Major: ";
 					cin >> newUser_Major;
+					studentUser->set_major(newUser_Major);
 
 					user_insert = adminUser->add_user(
 						studentUser->get_firstname(), studentUser->get_lastname(), newUser->getID(),
