@@ -10,16 +10,28 @@ class Login
 	std::string username;
 	std::string password;
 	int ID;
-
-	std::string authenticate();
-
+	string role;
 public:
-	Login(const std::string& uname, const std::string& pass, int ID);
-	void loginUser(); 
+	Login();
+	string authenticate();
+	Login(const std::string& uname, const std::string& pass, int in_ID);
+	void loginUser();
+	void loginUser(string in_username, string in_password, int ID);
 	string getUsername();
 	string getPassword();
 	int getID();
-	void loginUser(string in_username, string in_password, int ID);
+	string getRole();
+
+	void setUsername(string in_user);
+	void setPassword(string in_password);
+	void setID(int in_ID);
+	void setRole(string in_role);
+
+	void registerUser(string in_user, string in_pw, int in_ID, string in_role);
+
+
+	//Logout function
+	void logout();
 };
 
 

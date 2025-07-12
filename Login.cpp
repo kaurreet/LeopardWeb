@@ -1,15 +1,25 @@
 #include "Login.h"
 #include <iostream>
 using std::string;
+#include <algorithm>
 
 extern "C" {
 	#include "sqlite3.h"
 }
 
-Login::Login(const std::string& uname, const std::string& pass, int ID) {
+using std::cin;
+using std::cout;
+using std::endl;
+using std::string;
+
+Login::Login() {
+
+}
+
+Login::Login(const std::string& uname, const std::string& pass, int in_ID) {
 	username = uname;
 	password = pass;
-	ID = ID;
+	ID = in_ID;
 }
 
 string Login::getUsername() {
@@ -21,8 +31,31 @@ string Login::getPassword() {
 int Login::getID() {
 	return ID;
 }
+string Login::getRole(){
+	return role;
+}
 
-std::string Login::authenticate() {
+void Login::setUsername(string in_user){
+	username = in_user;
+}
+void Login::setPassword(string in_password){
+	password = in_password;
+}
+void Login::setID(int in_ID){
+	ID = in_ID;
+}
+void Login::setRole(string in_role){
+	role = in_role;
+}
+void Login::logout(){
+	username = "";
+	password = "";
+	ID = 0;
+	role = "";
+}
+
+
+string Login::authenticate() {
 	sqlite3* db;
 	sqlite3_stmt* stmt;
 	int rc = sqlite3_open("assignment3.db", &db);
@@ -32,7 +65,7 @@ std::string Login::authenticate() {
 		return "invalid";
 	}
 
-	std::string query = "SELECT * FROM users WHERE Username=? AND Password=? AND ID=?;";
+	std::string query = "SELECT * FROM LOGINS WHERE Username=? AND Password=? AND ID=?;";
 	rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
 
 	if (rc == SQLITE_OK) {
@@ -90,3 +123,34 @@ void Login::loginUser(string in_username, string in_password, int ID) {
 	}
 }   
 
+void Login::registerUser(string in_user, string in_pw, int in_ID, string in_role) {
+	sqlite3* db;
+	sqlite3_stmt* stmt;
+	int rc = sqlite3_open("assignment3.db", &db);
+
+	if (rc != SQLITE_OK) {
+		cout << "Error opening database.\n";
+		return;
+	}
+
+	string insert_query = "INSERT INTO LOGINS (Username, Password, ID, ROLE) VALUES (?, ?, ?, ?);";
+	rc = sqlite3_prepare_v2(db, insert_query.c_str(), -1, &stmt, nullptr);
+
+	if (rc == SQLITE_OK) {
+		sqlite3_bind_text(stmt, 1, in_user.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_text(stmt, 2, in_pw.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_int(stmt, 3, in_ID);
+		sqlite3_bind_text(stmt, 4, in_role.c_str(), -1, SQLITE_STATIC);
+
+		rc = sqlite3_step(stmt);
+		if (rc == SQLITE_DONE) {
+			cout << "Registration successful. You can now log in.\n";
+		}
+		else {
+			cout << "Registration failed.\n";
+		}
+	}
+
+	sqlite3_finalize(stmt);
+	sqlite3_close(db);
+}
