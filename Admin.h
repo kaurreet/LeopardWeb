@@ -14,6 +14,7 @@ class Admin :
 	string office;
 public:
 	//constructor
+	Admin();
 	Admin(string in_fname, string in_lname, int in_ID);
 	Admin(string in_fname, string in_lname, int in_ID, string in_email, string in_title, string in_office);
 	//methods
