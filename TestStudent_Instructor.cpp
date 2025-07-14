@@ -32,7 +32,7 @@ protected:
     Instructor instructor;
 
     void SetUp() override {
-        instructor = Instructor("Dr", "Smith", 20001);
+        instructor = Instructor("David", "Smith", 20001);
     }
 };
 
