@@ -10,10 +10,6 @@ using std::cout;
 using std::endl;
 using std::string;
 
-Admin::Admin() {
-
-}
-
 Admin::Admin(string in_fname, string in_lname, int in_ID) {
 	first_name = in_fname;
 	last_name = in_lname;
@@ -143,13 +139,27 @@ string Admin::update_user(sqlite3* db, string user_searchf, string user_searchl,
 
 	return result;
 }
-void Admin::add_student_course(string in_student, string in_course) {
-	//cout << "Student Added to Course!";
-	cout << in_student << " Added to " << in_course << "!" << endl;
+
+string Admin::link_instructor(sqlite3* db, int crn, string instructor_name) {
+	string sql = "UPDATE COURSE SET INSTRUCTOR = '" + instructor_name + "' WHERE CRN = " + std::to_string(crn) + ";";
+	return sql;
 }
-void Admin::remove_student_course(string in_student, string in_course) {
-	//cout << "Student Removed from Course!";
-	cout << in_student << " Removed from " << in_course << "!" << endl;
+
+string Admin::unlink_instructor(sqlite3* db, int crn) {
+	string sql = "UPDATE COURSE SET INSTRUCTOR = '' WHERE CRN = " + std::to_string(crn) + ";";
+	return sql;
+}
+
+string Admin::add_student_course(sqlite3* db, string in_student_id, string in_course) {
+	string sql = "INSERT INTO REGISTERED (CRN, TITLE, DEPARTMENT, TIME, DoftW, SEMESTER, YEAR, CREDITS, StudentID) "
+		"SELECT CRN, TITLE, DEPARTMENT, TIME, DoftW, SEMESTER, YEAR, CREDITS, '" + in_student_id + "' "
+		"FROM COURSE WHERE TITLE = '" + in_course + "';";
+	return sql;
+}
+
+string Admin::remove_student_course(sqlite3* db, string in_student_id, string in_course) {
+	string sql = "DELETE FROM REGISTERED WHERE TITLE = '" + in_course + "' AND StudentID = '" + in_student_id + "';";
+	return sql;
 }
 void Admin::search_roster(sqlite3* db, string user_searchf, string user_searchl, string user_search_ID, string user_search_Grad_year, string user_search_Major, string user_search_Email, string search_user_type, string user_search_Title, string user_search_YOH, string user_search_Department, string user_search_Office) {
 	sqlite3_stmt* stmt;
