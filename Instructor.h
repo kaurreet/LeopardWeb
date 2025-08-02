@@ -17,7 +17,6 @@ class Instructor :
 	string department;
 public:
 	//constructor
-	Instructor();
 	Instructor(string in_fname, string in_lname, int in_ID);
 	Instructor(string in_fname, string in_lname, int in_ID, string in_email, string in_title, int in_YOH, string in_department);
 	//methods
