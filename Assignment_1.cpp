@@ -8,6 +8,9 @@
 #include "Admin.h"
 #include "Course.h"
 #include "Login.h"
+#include <limits>
+#include <iostream>
+using namespace std; // Or use std::cin explicitly
 extern "C" {
 	#include "sqlite3.h"
 }
@@ -192,6 +195,8 @@ int main()
 	string user_remove_Office;
 	int remove_user_type;
 	string course_parameter;
+	int in_loop = 1;
+	bool has_conflict;
 	exit = sqlite3_open("assignment3.db", &db);			//open the database
 	create_tables(db);
 	string sql(
@@ -254,13 +259,40 @@ int main()
 					transform(role.begin(), role.end(), role.begin(), ::tolower);
 
 					if (role == "student") {
-						Student studentUser = Student(user_first_name, user_last_name, user_ID);
+						string user_first_name, user_last_name;
+						// Query the STUDENT table to retrieve first and last name
+						string name_query = "SELECT NAME, SURNAME FROM STUDENT WHERE ID = ?;";
+						rc = sqlite3_prepare_v2(db, name_query.c_str(), -1, &stmt, nullptr);
+
+						if (rc == SQLITE_OK) {
+							sqlite3_bind_int(stmt, 1, user_ID);
+							rc = sqlite3_step(stmt);
+							if (rc == SQLITE_ROW) {
+								user_first_name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+								user_last_name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+							}
+							else {
+								cout << "Student not found in database. Please contact an administrator.\n";
+								sqlite3_finalize(stmt);
+								continue; // Skip to next iteration of login loop
+							}
+						}
+						else {
+							cout << "Error preparing query: " << sqlite3_errmsg(db) << "\n";
+							sqlite3_finalize(stmt);
+							continue; // Skip to next iteration of login loop
+						}
+						sqlite3_finalize(stmt);
+
+						// Create Student object with retrieved data
+						Student studentUser(user_first_name, user_last_name, user_ID);
+						bool hasExitUser = false;
+
 						while (hasExitUser == false) {
-							cout << " 1 - Search Course \n 2 - Add Course \n 3 - Remove Course \n 4 - Print Schedule \n 0 - Exit \n";
+							cout << " 1 - Search Course \n 2 - Add Course \n 3 - Remove Course \n 4 - Print Schedule \n 5 - Check Conflicts \n 0 - Exit \n";
 							cin >> user_input;
 							Course* CourseAttr = new Course();
-							if (user_input == 1)
-							{
+							if (user_input == 1) {
 								cout << "Do you want to search a course by a parameter? (If No, Enter no. If Yes, Enter name, crn, dep, instructor): ";
 								cin >> course_parameter;
 								if (course_parameter == "no") {
@@ -293,22 +325,17 @@ int main()
 								if (course_parameter != "no" && course_parameter != "name" && course_parameter != "crn" && course_parameter != "dep" && course_parameter != "instructor") {
 									cout << "Invalid parameter entered.\n";
 								}
-								else
-								{
+								else {
 									cout << endl;
-
-									// Prepare and execute the query to count rows
 									sqlite3_stmt* stmt_check;
 									int rc_check = sqlite3_prepare_v2(db, return_v.c_str(), -1, &stmt_check, nullptr);
 									int row_count = 0;
-
 									if (rc_check == SQLITE_OK) {
 										while (sqlite3_step(stmt_check) == SQLITE_ROW) {
 											row_count++;
 										}
 										sqlite3_finalize(stmt_check);
 									}
-
 									if (row_count == 0) {
 										std::cout << "Course not found in the database" << std::endl;
 									}
@@ -316,11 +343,8 @@ int main()
 										sqlite3_exec(db, return_v.c_str(), callback, NULL, NULL);
 									}
 								}
-
-
 							}
-							else if (user_input == 2)
-							{
+							else if (user_input == 2) {
 								cout << "What is the name of the Course that you want to add?: ";
 								cin >> course_add_drop;
 								CourseAttr->set_title(course_add_drop);
@@ -349,8 +373,7 @@ int main()
 									}
 								}
 							}
-							else if (user_input == 3)
-							{
+							else if (user_input == 3) {
 								CourseAttr->set_title(course_add_drop);
 								cout << "What is the name of the Course that you want to remove?: ";
 								cin >> course_add_drop;
@@ -380,63 +403,95 @@ int main()
 										std::cout << "Course successfully removed from the database.\n";
 									}
 								}
-
-
 							}
-							else if (user_input == 4)
-							{
+							else if (user_input == 4) {
 								query = studentUser.print_schedule();
-								cout << endl << query << endl;		//print the string to screen
-
-								// you need the callback function this time since there could be multiple rows in the table
+								cout << endl << query << endl;
 								sqlite3_exec(db, query.c_str(), callback, NULL, NULL);
 							}
-							else if (user_input == 0)
-							{
+							else if (user_input == 5) {
+								string course_title = "";
+								std::cin.ignore();
+								cout << "Enter the name of the Course to check for conflicts: ";
+								getline(cin, course_title);
+								has_conflict = studentUser.check_conflict(db, course_title, studentUser.get_ID());
+								cout << "\nResult: " << (has_conflict ? "Conflict detected for '" + course_title 
+									+ "'." : "No conflict found for '" + course_title + "'.") << "\n";
+							}					
+							else if (user_input == 0) {
 								hasExitUser = true;
 							}
+							delete CourseAttr;
 						}
 					}
-					else if (role == "instructor") {
-						Instructor instructorUser = Instructor(user_first_name, user_last_name, user_ID);
-						while (hasExitUser == false) {
-							cout << " 1 - Print Schedule \n 2 - Print Class List for a Student \n 3 - Print Course Roster \n 4 - Search Course \n 0 - Exit \n";
-							cin >> user_input;
-							Course* CourseAttr = new Course();
-							if (user_input == 1)
-							{
-								query = instructorUser.print_schedule(instructorUser.get_first_name(), instructorUser.get_last_name());
-								cout << endl << query << endl;		//print the string to screen
 
-								// you need the callback function this time since there could be multiple rows in the table
+				else if (role == "instructor") {
+					string instructor_first_name, instructor_last_name;
+					string instructor_name;
+
+					// Query the INSTRUCTOR table to retrieve first and last name
+					string name_query = "SELECT NAME, SURNAME FROM INSTRUCTOR WHERE ID = ?;";
+					rc = sqlite3_prepare_v2(db, name_query.c_str(), -1, &stmt, nullptr);
+
+					if (rc != SQLITE_OK) {
+						cout << "Error preparing instructor query: " << sqlite3_errmsg(db) << "\n";
+						sqlite3_finalize(stmt);
+						return false; // Exit function on query preparation failure
+					}
+
+					sqlite3_bind_int(stmt, 1, user_ID);
+					rc = sqlite3_step(stmt);
+					if (rc != SQLITE_ROW) {
+						cout << "Instructor not found in database. Please contact an administrator.\n";
+						sqlite3_finalize(stmt);
+						return false; // Exit function if instructor not found
+					}
+
+					instructor_first_name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+					instructor_last_name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+					instructor_name = instructor_first_name + " " + instructor_last_name;
+					sqlite3_finalize(stmt);
+
+					Instructor instructorUser(instructor_first_name, instructor_last_name, user_ID);
+
+					while (!hasExitUser) {
+						cout << " 1 - Print Schedule \n 2 - Print Class List for a Student \n 3 - Print Course Roster \n 4 - Search Course \n 0 - Exit \n";
+						cin >> user_input;
+
+						Course* CourseAttr = nullptr;
+						Student* tmp_student = nullptr;
+						sqlite3_stmt* stmt_name = nullptr;
+						sqlite3_stmt* stmt_header = nullptr;
+						sqlite3_stmt* stmt_check = nullptr;
+
+						try {
+							CourseAttr = new Course();
+
+							if (user_input == 1) {
+								query = instructorUser.print_schedule(instructor_first_name, instructor_last_name);
+								cout << endl << query << endl; //print the string to screen
 								sqlite3_exec(db, query.c_str(), callback, NULL, NULL);
 							}
-							else if (user_input == 2)
-							{
+							else if (user_input == 2) {
 								int student_id;
-								Student* tmp_student = new Student();
+								tmp_student = new Student();
 								cout << "Enter Student ID to view their class list: ";
 								cin >> student_id;
 								tmp_student->set_ID(student_id);
 								string name_query = instructorUser.get_studentname(tmp_student->get_ID());
-								sqlite3_stmt* stmt_name = nullptr;
-
+								stmt_name = nullptr;
 								if (sqlite3_prepare_v2(db, name_query.c_str(), -1, &stmt_name, nullptr) == SQLITE_OK) {
 									if (sqlite3_step(stmt_name) == SQLITE_ROW) {
 										tmp_student->set_firstname(reinterpret_cast<const char*>(sqlite3_column_text(stmt_name, 0)));
 										tmp_student->set_lastname(reinterpret_cast<const char*>(sqlite3_column_text(stmt_name, 1)));
-										cout << "First Name = " << tmp_student->get_firstname() << "   |   Last Name = " << tmp_student->get_lastname() << "\n";
+										cout << "First Name = " << tmp_student->get_firstname() << " | Last Name = " << tmp_student->get_lastname() << "\n";
 									}
 									else {
 										std::cerr << "Student ID not found.\n";
-										sqlite3_finalize(stmt_name);
-										continue;
 									}
-									sqlite3_finalize(stmt_name);
 								}
 								else {
 									std::cerr << "Failed to prepare name query. Error: " << sqlite3_errmsg(db) << "\n";
-									continue;
 								}
 								string student_query = instructorUser.getstudent_classlist(tmp_student->get_ID());
 								cout << "\nCourses enrolled:\n";
@@ -447,31 +502,25 @@ int main()
 									sqlite3_free(errMsg);
 								}
 							}
-							else if (user_input == 3)
-							{
+							else if (user_input == 3) {
 								string title;
 								cout << "Enter the name of the course to view its roster: ";
 								cin >> title;
 								string course_info = instructorUser.get_courseinfo(title);
-								sqlite3_stmt* stmt_header = nullptr;
-
+								stmt_header = nullptr;
 								if (sqlite3_prepare_v2(db, course_info.c_str(), -1, &stmt_header, nullptr) == SQLITE_OK) {
 									if (sqlite3_step(stmt_header) == SQLITE_ROW) {
 										CourseAttr->set_title(reinterpret_cast<const char*>(sqlite3_column_text(stmt_header, 0)));
 										CourseAttr->set_instructor(reinterpret_cast<const char*>(sqlite3_column_text(stmt_header, 1)));
 										CourseAttr->set_CRN(sqlite3_column_int(stmt_header, 2));
-										cout << "COURSE: " << CourseAttr->get_title() << "   | INSTRUCTOR: " << CourseAttr->get_instructor() << "   | CRN: " << CourseAttr->get_CRN() << "\n\n";
+										cout << "COURSE: " << CourseAttr->get_title() << " | INSTRUCTOR: " << CourseAttr->get_instructor() << " | CRN: " << CourseAttr->get_CRN() << "\n\n";
 									}
 									else {
 										std::cerr << "Course not found.\n";
-										sqlite3_finalize(stmt_header);
-										continue;
 									}
-									sqlite3_finalize(stmt_header);
 								}
 								else {
 									std::cerr << "Failed to prepare course header query. Error: " << sqlite3_errmsg(db) << "\n";
-									continue;
 								}
 								string roster_info = instructorUser.getcourse_roster(title);
 								cout << "Enrolled Students:\n";
@@ -482,8 +531,7 @@ int main()
 									sqlite3_free(errMsg);
 								}
 							}
-							else if (user_input == 4)
-							{
+							else if (user_input == 4) {
 								cout << "Do you want to search a course by a parameter? (If No, Enter no. If Yes, Enter name, crn, dep, instructor): ";
 								cin >> course_parameter;
 								if (course_parameter == "no") {
@@ -516,20 +564,16 @@ int main()
 								if (course_parameter != "no" && course_parameter != "name" && course_parameter != "crn" && course_parameter != "dep" && course_parameter != "instructor") {
 									cout << "Invalid parameter entered.\n";
 								}
-								else
-								{
+								else {
 									cout << endl;
-									sqlite3_stmt* stmt_check;
+									stmt_check = nullptr;
 									int rc_check = sqlite3_prepare_v2(db, return_v.c_str(), -1, &stmt_check, nullptr);
 									int row_count = 0;
-
 									if (rc_check == SQLITE_OK) {
 										while (sqlite3_step(stmt_check) == SQLITE_ROW) {
 											row_count++;
 										}
-										sqlite3_finalize(stmt_check);
 									}
-
 									if (row_count == 0) {
 										std::cout << "Course not found in the database" << std::endl;
 									}
@@ -538,16 +582,38 @@ int main()
 									}
 								}
 							}
-							else if (user_input == 0)
-							{
+							else if (user_input == 0) {
 								hasExitUser = true;
 							}
+
+							// Clean up dynamically allocated objects
+							delete CourseAttr;
+							CourseAttr = nullptr;
+							delete tmp_student;
+							tmp_student = nullptr;
+							sqlite3_finalize(stmt_name);
+							sqlite3_finalize(stmt_header);
+							sqlite3_finalize(stmt_check);
 						}
+						catch (const std::exception& e) {
+							std::cerr << "Exception caught: " << e.what() << "\n";
+							delete CourseAttr;
+							CourseAttr = nullptr;
+							delete tmp_student;
+							tmp_student = nullptr;
+							sqlite3_finalize(stmt_name);
+							sqlite3_finalize(stmt_header);
+							sqlite3_finalize(stmt_check);
+						}
+					}
+
+					// Clean up database connection (assuming it's managed here or passed in)
+					sqlite3_close(db);
 					}
 					else if (role == "admin") {
 						Admin adminUser = Admin(user_first_name, user_last_name, user_ID);
 						while (hasExitUser == false) {
-							cout << " 1 - Add Course \n 2 - Remove Course \n 3 - Add User \n 4 - Remove User \n 5 - Update User \n 6 - Search Roster \n 7 - Print Roster \n 8 - Search Course \n 9 - Print Course \n 0 - Exit \n";
+							cout << " 1 - Add Course \n 2 - Remove Course \n 3 - Add User \n 4 - Remove User \n 5 - Update User \n 6 - Search Roster \n 7 - Print Roster \n 8 - Search Course \n 9 - Print Course \n 10 - Link an Instructor \n 11 - Unlink an Instructor \n 12 - Add student to a course \n 13 - Remove student from a course \n 0 - Exit \n";
 							cin >> user_input;
 							Course* CourseAttr = new Course();
 							if (user_input == 1)
@@ -577,8 +643,10 @@ int main()
 								cin >> course_year;
 								cout << "How many credits is the course worth?: ";
 								cin >> course_credits;
-								Course* CourseAttr = new Course((int)Course_CRN, course_add_drop, department_course, course_instructor, course_start_time, Meeting_times, course_semester, (int)course_year, (int)course_credits);
-								return_v = adminUser.add_course(CourseAttr->get_title(), CourseAttr->get_CRN(), CourseAttr->get_department(), CourseAttr->get_instructor(), CourseAttr->get_time(), CourseAttr->get_days(), CourseAttr->get_semester(), CourseAttr->get_year(), CourseAttr->get_credits());
+								Course* CourseAttr = new Course((int)Course_CRN, course_add_drop, department_course, course_instructor, 
+									course_start_time, Meeting_times, course_semester, (int)course_year, (int)course_credits);
+								return_v = adminUser.add_course(CourseAttr->get_title(), CourseAttr->get_CRN(), CourseAttr->get_department(), CourseAttr->get_instructor(),
+									CourseAttr->get_time(), CourseAttr->get_days(), CourseAttr->get_semester(), CourseAttr->get_year(), CourseAttr->get_credits());
 								int rc = sqlite3_exec(db, return_v.c_str(), nullptr, nullptr, &errMsg);
 								if (rc != SQLITE_OK) {
 									std::cerr << "SQL error while adding course: " << errMsg << std::endl;
@@ -922,6 +990,70 @@ int main()
 
 								// you need the callback function this time since there could be multiple rows in the table
 								sqlite3_exec(db, query.c_str(), callback, NULL, NULL);
+							}
+							else if (user_input == 10) {
+								int crn;
+								string instructor_name;
+								cout << "Enter the CRN of the course to link an instructor: ";
+								cin >> crn;
+								cout << "Enter the instructor's full name (e.g., 'John Doe'): ";
+								cin.ignore();
+								getline(cin, instructor_name);
+								return_v = adminUser.link_instructor(db, crn, instructor_name);
+								if (sqlite3_exec(db, return_v.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+									std::cerr << "SQL error while linking instructor: " << errMsg << std::endl;
+									if (errMsg) sqlite3_free(errMsg);
+								}
+								else {
+									std::cout << "Instructor successfully linked to course.\n";
+								}
+							}
+							else if (user_input == 11) {
+									int crn;
+									cout << "Enter the CRN of the course to unlink the instructor: ";
+									cin >> crn;
+									return_v = adminUser.unlink_instructor(db, crn);
+									if (sqlite3_exec(db, return_v.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+										std::cerr << "SQL error while unlinking instructor: " << errMsg << std::endl;
+										if (errMsg) sqlite3_free(errMsg);
+									}
+									else {
+										std::cout << "Instructor successfully unlinked from course.\n";
+									}
+							}
+							else if (user_input == 12) {
+								int student_id;
+								string course_title;
+								cout << "Enter the Student ID to add to a course: ";
+								cin >> student_id;
+								cout << "Enter the course title to add the student to: ";
+								cin.ignore();
+								getline(cin, course_title);
+								return_v = adminUser.add_student_course(db, to_string(student_id), course_title);
+								if (sqlite3_exec(db, return_v.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+									std::cerr << "SQL error while adding student to course: " << errMsg << std::endl;
+									if (errMsg) sqlite3_free(errMsg);
+								}
+								else {
+									std::cout << "Student successfully added to course.\n";
+								}
+							}
+							else if (user_input == 13) { 
+									int student_id;
+									string course_title;
+									cout << "Enter the Student ID to remove from a course: ";
+									cin >> student_id;
+									cout << "Enter the course title to remove the student from: ";
+									cin.ignore();
+									getline(cin, course_title);
+									return_v = adminUser.remove_student_course(db, to_string(student_id), course_title);
+									if (sqlite3_exec(db, return_v.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+										std::cerr << "SQL error while removing student from course: " << errMsg << std::endl;
+										if (errMsg) sqlite3_free(errMsg);
+									}
+									else {
+										std::cout << "Student successfully removed from course.\n";
+									}
 							}
 							else if (user_input == 0)
 							{
