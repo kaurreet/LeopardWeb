@@ -40,6 +40,7 @@ public:
 	string add_course(sqlite3* DB, string in_course_name, int ID);
 	string remove_course(sqlite3* DB, string in_course_name, int ID);
 	string print_schedule();
+	bool check_conflict(sqlite3* db, string course_title, int student_id);
 	//destructor
 	~Student();
 };
