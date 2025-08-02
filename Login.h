@@ -2,7 +2,7 @@
 #include <string>
 
 extern "C" {
-	#include "sqlite3.h"
+#include "sqlite3.h"
 }
 using std::string;
 class Login
@@ -29,6 +29,9 @@ public:
 
 	void registerUser(string in_user, string in_pw, int in_ID, string in_role);
 
+
+	//Logout function
+	void logout();
 };
 
 
