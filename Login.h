@@ -31,7 +31,7 @@ public:
 
 
 	//Logout function
-	void logout();
+	string logout();
 };
 
 

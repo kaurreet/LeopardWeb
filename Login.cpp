@@ -47,11 +47,12 @@ void Login::setID(int in_ID){
 void Login::setRole(string in_role){
 	role = in_role;
 }
-void Login::logout(){
+string Login::logout(){
 	username = "";
 	password = "";
 	ID = 0;
 	role = "";
+	return "Logged out successfully.";
 }
 
 
